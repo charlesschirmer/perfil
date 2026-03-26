@@ -21,15 +21,23 @@ body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(
 /* HEADER */
 .site-header {
   background: var(--ink); color: #fff;
-  padding: 12px 36px; display: flex; align-items: center; gap: 16px;
+  padding: 10px 28px; display: flex; align-items: center; gap: 16px;
 }
 .site-header .badge {
-  height: 72px; display: flex; align-items: center; flex-shrink: 0;
-  background: #fff; border-radius: 10px; padding: 6px 12px;
+  height: 60px; display: flex; align-items: center; flex-shrink: 0;
+  background: #fff; border-radius: 10px; padding: 5px 10px;
 }
-.site-header .badge img { height: 62px; width: auto; display: block; }
-.site-header h1 { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; }
+.site-header .badge img { height: 50px; width: auto; display: block; }
+.site-header h1 { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; }
 .site-header p { font-size: 11px; color: #999; margin-top: 2px; }
+
+@media (max-width: 768px) {
+  .site-header { padding: 8px 14px; gap: 10px; }
+  .site-header .badge { height: 44px; padding: 4px 8px; }
+  .site-header .badge img { height: 36px; }
+  .site-header h1 { font-size: 14px; }
+  .site-header p { display: none; }
+}
 
 /* SCREENS */
 .screen { display: none; }
@@ -76,75 +84,235 @@ body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(
 /* Code error */
 #codigo-error { display:none; margin-top:8px; padding:10px 14px; background:#fdf2ef; border:1.5px solid #d94f34; border-radius:8px; font-size:13px; color:#d94f34; align-items:center; gap:8px; }
 
-/* WHEEL SCREEN */
+/* ═══════════════════════════════════════════════
+   WHEEL SCREEN — RESPONSIVE LAYOUT
+   Desktop: wheel left (fills height) + sidebar right
+   Mobile:  stacked, wheel full-width, scores below
+═══════════════════════════════════════════════ */
+
+/* The screen itself is flex column — make it fill viewport */
+#screen-wheel { min-height: calc(100vh - 96px); }
+
+/* Outer wrapper: two columns on desktop */
 .wheel-screen-inner {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 32px 20px 60px; max-width: 900px; margin: 0 auto; width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "title  sidebar"
+    "wheel  sidebar"
+    "hint   sidebar"
+    "acts   sidebar";
+  gap: 0 24px;
+  align-items: start;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 28px 40px;
+  flex: 1;
 }
 
+/* Grid area assignments */
+.wheel-title       { grid-area: title; }
+.wheel-container   { grid-area: wheel; }
+.hint-box          { grid-area: hint; }
+.wheel-actions     { grid-area: acts; }
+.score-panel       { grid-area: sidebar; }
+
+/* TITLE */
 .wheel-title {
-  text-align: center; margin-bottom: 28px;
+  text-align: left;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1.5px solid var(--border);
 }
-.wheel-title h2 { font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 6px; }
+.wheel-title h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px; margin-bottom: 4px;
+  display: flex; align-items: center; gap: 12px;
+}
 .wheel-title p { font-size: 13px; color: var(--muted); }
-.wheel-person { font-size: 14px; font-weight: 600; color: var(--ink); margin-top: 4px; }
+.wheel-person {
+  display: inline-block;
+  font-size: 13px; font-weight: 600; color: var(--gold);
+  background: var(--ink); padding: 3px 12px; border-radius: 99px;
+  margin-top: 8px;
+}
 
-/* SVG WHEEL */
+/* SVG WHEEL — fills available space, never overflows viewport */
 .wheel-container {
-  width: 100%; max-width: 620px;
+  width: 100%;
+  /* On desktop: limit so the wheel fits viewport height minus header + padding */
+  max-height: calc(100vh - 200px);
+  aspect-ratio: 1 / 1;
   position: relative;
 }
-.wheel-container svg { width: 100%; height: auto; display: block; }
+.wheel-container svg {
+  width: 100%; height: 100%;
+  display: block;
+}
 
-/* Score sidebar / tooltip */
-.score-panel {
-  width: 100%; max-width: 620px;
-  margin-top: 24px;
-}
-.score-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
-}
-.score-item {
-  background: var(--card); border: 1.5px solid var(--border);
-  border-radius: 10px; padding: 12px 14px;
-  display: flex; align-items: center; gap: 10px;
-  cursor: pointer; transition: border-color .15s, box-shadow .15s;
-}
-.score-item:hover { border-color: #aaa; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
-.score-item.active-item { box-shadow: 0 2px 12px rgba(0,0,0,.12); }
-.score-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
-.score-name { font-size: 12px; font-weight: 600; flex: 1; line-height: 1.3; }
-.score-val { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; min-width: 24px; text-align: right; }
-.score-cat { font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-
-/* Instruction hint */
+/* HINT BOX */
 .hint-box {
   background: var(--ink); color: #ccc; border-radius: 10px;
-  padding: 12px 18px; font-size: 13px; text-align: center;
-  margin-bottom: 20px; max-width: 620px; width: 100%;
-  line-height: 1.6;
+  padding: 10px 16px; font-size: 12px; text-align: center;
+  margin-top: 14px;
+  line-height: 1.6; width: 100%;
 }
 .hint-box strong { color: var(--gold); }
 
-/* Reset / action buttons */
+/* ACTION BUTTONS */
 .wheel-actions {
-  display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; justify-content: center;
+  display: flex; gap: 10px; margin-top: 14px;
+  flex-wrap: wrap; justify-content: flex-start;
 }
 .btn-ghost {
   display: inline-flex; align-items: center; gap: 8px;
   background: transparent; color: var(--muted); border: 1.5px solid var(--border);
-  border-radius: 10px; padding: 11px 20px; font-family: 'DM Sans', sans-serif;
+  border-radius: 10px; padding: 10px 18px; font-family: 'DM Sans', sans-serif;
   font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s;
 }
 .btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
 
+/* SIDEBAR SCORE PANEL */
+.score-panel {
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+}
+.score-panel::-webkit-scrollbar { width: 4px; }
+.score-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.score-panel-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px; font-weight: 700;
+  margin-bottom: 16px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.score-total-badge {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px; font-weight: 700;
+  background: var(--ink); color: var(--gold);
+  padding: 3px 10px; border-radius: 8px;
+}
+
+/* Score items — single column in sidebar */
+.score-grid { display: flex; flex-direction: column; gap: 8px; }
+
+.score-item {
+  background: var(--paper); border: 1.5px solid var(--border);
+  border-radius: 9px; padding: 10px 12px;
+  display: flex; align-items: center; gap: 10px;
+  cursor: default; transition: border-color .15s;
+}
+.score-item.has-score { background: var(--card); }
+.score-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.score-name { font-size: 11.5px; font-weight: 600; flex: 1; line-height: 1.3; color: var(--ink); }
+.score-val {
+  font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;
+  min-width: 22px; text-align: right; flex-shrink: 0;
+}
+.score-cat {
+  font-size: 9px; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 1px;
+}
+.score-bar {
+  height: 3px; background: #eee; border-radius: 99px;
+  margin-top: 4px; overflow: hidden;
+}
+.score-bar-fill { height: 100%; border-radius: 99px; transition: width .4s ease; }
+
+/* Category separators in score panel */
+.score-cat-header {
+  font-size: 9px; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted);
+  padding: 10px 0 4px; border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+.score-cat-header:first-child { padding-top: 0; border-top: none; margin-top: 0; }
+
+/* ═══════════════════════════════════════════════
+   MOBILE — stacked layout
+═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  #screen-wheel { min-height: unset; }
+
+  .wheel-screen-inner {
+    display: flex;
+    flex-direction: column;
+    padding: 16px 14px 40px;
+    gap: 0;
+  }
+
+  .wheel-title {
+    text-align: center;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+  }
+  .wheel-title h2 { font-size: 22px; justify-content: center; }
+
+  .wheel-container {
+    width: 100%;
+    max-height: 92vw;   /* square, nearly full width */
+    aspect-ratio: 1/1;
+  }
+
+  .hint-box {
+    font-size: 11px;
+    padding: 8px 12px;
+    margin-top: 10px;
+  }
+
+  .wheel-actions {
+    justify-content: center;
+    margin-top: 12px;
+  }
+  .btn-ghost, .btn-primary { flex: 1; justify-content: center; padding: 12px; }
+
+  /* Score panel: full-width card below wheel */
+  .score-panel {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+  }
+
+  /* Two-column grid on mobile score panel */
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .score-cat-header { grid-column: 1 / -1; }
+}
+
+@media (max-width: 400px) {
+  .score-grid { grid-template-columns: 1fr; }
+  .wheel-container { max-height: 95vw; }
+}
+
+/* ACCESS SCREEN */
 @media (max-width: 560px) {
   .access-hero { padding: 28px 22px; }
   .access-hero h2 { font-size: 26px; }
   .form-card { padding: 24px 18px; }
   .field-row { grid-template-columns: 1fr; }
-  .score-grid { grid-template-columns: 1fr; }
-  .wheel-title h2 { font-size: 22px; }
+}
+
+/* PRINT */
+@media print {
+  .site-header, .wheel-actions, .hint-box, .score-panel, .no-print { display: none !important; }
+  .wheel-screen-inner { display: block; padding: 0; }
+  .wheel-container { max-height: none; width: 100%; }
 }
 </style>
 </head>
@@ -214,25 +382,28 @@ body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(
 <!-- ══════════════ SCREEN: WHEEL ══════════════ -->
 <div id="screen-wheel" class="screen">
   <div class="wheel-screen-inner">
+
+    <!-- TITLE -->
     <div class="wheel-title">
-      <h2>Roda da Vida</h2>
-      <p>Clique nos anéis de cada área para definir sua pontuação (1–10)</p>
+      <h2>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+        Roda da Vida
+      </h2>
+      <p>Clique nos anéis de cada fatia para definir sua pontuação de <strong>1</strong> a <strong>10</strong></p>
       <div class="wheel-person" id="wheel-person-name"></div>
     </div>
 
-    <div class="hint-box">
-      Clique em qualquer <strong>anel</strong> dentro de uma fatia para atribuir a pontuação.<br>
-      O anel mais interno = <strong>1</strong> · O anel mais externo = <strong>10</strong>
-    </div>
-
+    <!-- WHEEL SVG -->
     <div class="wheel-container">
       <svg id="wheel-svg" viewBox="-60 -60 720 720" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
 
-    <div class="score-panel">
-      <div class="score-grid" id="score-grid"></div>
+    <!-- HINT -->
+    <div class="hint-box">
+      Anel interno = <strong>1</strong> &nbsp;·&nbsp; Anel externo = <strong>10</strong> &nbsp;·&nbsp; Clique para definir a pontuação de cada área
     </div>
 
+    <!-- ACTIONS -->
     <div class="wheel-actions">
       <button class="btn-ghost" onclick="resetWheel()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
@@ -243,6 +414,16 @@ body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(
         Salvar / Imprimir
       </button>
     </div>
+
+    <!-- SCORE SIDEBAR -->
+    <div class="score-panel">
+      <div class="score-panel-title">
+        Pontuações
+        <span class="score-total-badge" id="score-total-badge">0 / 12</span>
+      </div>
+      <div class="score-grid" id="score-grid"></div>
+    </div>
+
   </div>
 </div>
 
@@ -624,32 +805,46 @@ function drawWheel() {
 }
 
 // ══════════════════════════════════════════════════════
-//  SCORE GRID
+//  SCORE GRID — grouped by category with mini bar
 // ══════════════════════════════════════════════════════
 function renderScoreGrid() {
-  const grid = document.getElementById('score-grid');
-  grid.innerHTML = SEGMENTS.map(seg => {
-    const sc  = scores[seg.id];
-    const pct = sc * 10;
-    const col = sc === 0 ? '#ccc' : seg.color;
-    return `
-      <div class="score-item" style="border-color:${sc > 0 ? seg.color+'55' : ''}" onclick="highlightSeg('${seg.id}')">
-        <div class="score-dot" style="background:${seg.color}"></div>
-        <div style="flex:1;min-width:0;">
-          <div class="score-cat">${seg.cat}</div>
-          <div class="score-name">${seg.label.replace('\n',' ')}</div>
-          <div style="height:4px;background:#f0ede8;border-radius:99px;margin-top:5px;overflow:hidden;">
-            <div style="height:100%;width:${pct}%;background:${col};border-radius:99px;transition:width .4s ease;"></div>
-          </div>
-        </div>
-        <div class="score-val" style="color:${col}">${sc > 0 ? sc : '–'}</div>
-      </div>`;
-  }).join('');
-}
+  const grid  = document.getElementById('score-grid');
+  const badge = document.getElementById('score-total-badge');
 
-function highlightSeg(id) {
-  // Pulse the segment on the wheel
-  drawWheel();
+  // Count filled
+  const filled = SEGMENTS.filter(s => scores[s.id] > 0).length;
+  if (badge) badge.textContent = filled + ' / 12';
+
+  // Group by category
+  const cats = {};
+  SEGMENTS.forEach(seg => {
+    if (!cats[seg.cat]) cats[seg.cat] = [];
+    cats[seg.cat].push(seg);
+  });
+
+  let html = '';
+  Object.entries(cats).forEach(([cat, segs]) => {
+    html += `<div class="score-cat-header">${cat}</div>`;
+    segs.forEach(seg => {
+      const sc  = scores[seg.id];
+      const pct = sc * 10;
+      const col = sc === 0 ? '#ccc' : seg.color;
+      const hasScore = sc > 0;
+      html += `
+        <div class="score-item ${hasScore ? 'has-score' : ''}" style="${hasScore ? 'border-color:'+seg.color+'44' : ''}">
+          <div class="score-dot" style="background:${seg.color}"></div>
+          <div style="flex:1;min-width:0;">
+            <div class="score-name">${seg.label.replace('\n',' ')}</div>
+            <div class="score-bar">
+              <div class="score-bar-fill" style="width:${pct}%;background:${col};"></div>
+            </div>
+          </div>
+          <div class="score-val" style="color:${col}">${hasScore ? sc : '–'}</div>
+        </div>`;
+    });
+  });
+
+  grid.innerHTML = html;
 }
 
 // ══════════════════════════════════════════════════════
