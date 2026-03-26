@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roda da Vida — Retorno</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #111118;
+  --paper: #f8f7f3;
+  --card: #ffffff;
+  --accent: #c9472f;
+  --gold: #c9a84c;
+  --muted: #888480;
+  --border: #e4e0d8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
+
+/* HEADER */
+.site-header {
+  background: var(--ink); color: #fff;
+  padding: 12px 36px; display: flex; align-items: center; gap: 16px;
+}
+.site-header .badge {
+  height: 72px; display: flex; align-items: center; flex-shrink: 0;
+  background: #fff; border-radius: 10px; padding: 6px 12px;
+}
+.site-header .badge img { height: 62px; width: auto; display: block; }
+.site-header h1 { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; }
+.site-header p { font-size: 11px; color: #999; margin-top: 2px; }
+
+/* SCREENS */
+.screen { display: none; }
+.screen.active { display: flex; flex-direction: column; flex: 1; }
+
+/* ACCESS SCREEN */
+.access-wrap {
+  max-width: 560px; margin: 0 auto; padding: 52px 20px 80px;
+  display: flex; flex-direction: column; gap: 24px; width: 100%;
+}
+.access-hero {
+  background: var(--ink); border-radius: 18px; padding: 44px;
+  color: #fff; position: relative; overflow: hidden;
+}
+.access-hero::before {
+  content: '○'; position: absolute; right: -20px; top: -40px;
+  font-size: 280px; color: rgba(255,255,255,.04); line-height: 1;
+}
+.access-hero h2 { font-family: 'Playfair Display', serif; font-size: 32px; line-height: 1.15; margin-bottom: 12px; }
+.access-hero h2 span { color: var(--gold); }
+.access-hero p { font-size: 14px; line-height: 1.7; color: #c0bdb8; }
+
+.form-card {
+  background: var(--card); border-radius: 14px; border: 1px solid var(--border);
+  padding: 32px 36px;
+}
+.form-card h3 { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 22px; display: flex; align-items: center; gap: 10px; }
+.form-card h3 .num { width: 30px; height: 30px; background: var(--accent); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.field input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--paper); outline: none; transition: border-color .18s, box-shadow .18s; }
+.field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,71,47,.1); background: #fff; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field-row.full { grid-template-columns: 1fr; }
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 9px;
+  background: var(--accent); color: #fff; border: none; border-radius: 11px;
+  padding: 13px 28px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: transform .14s, box-shadow .14s;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(201,71,47,.32); }
+
+/* Code error */
+#codigo-error { display:none; margin-top:8px; padding:10px 14px; background:#fdf2ef; border:1.5px solid #d94f34; border-radius:8px; font-size:13px; color:#d94f34; align-items:center; gap:8px; }
+
+/* WHEEL SCREEN */
+.wheel-screen-inner {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 32px 20px 60px; max-width: 900px; margin: 0 auto; width: 100%;
+}
+
+.wheel-title {
+  text-align: center; margin-bottom: 28px;
+}
+.wheel-title h2 { font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 6px; }
+.wheel-title p { font-size: 13px; color: var(--muted); }
+.wheel-person { font-size: 14px; font-weight: 600; color: var(--ink); margin-top: 4px; }
+
+/* SVG WHEEL */
+.wheel-container {
+  width: 100%; max-width: 620px;
+  position: relative;
+}
+.wheel-container svg { width: 100%; height: auto; display: block; }
+
+/* Score sidebar / tooltip */
+.score-panel {
+  width: 100%; max-width: 620px;
+  margin-top: 24px;
+}
+.score-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+}
+.score-item {
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; transition: border-color .15s, box-shadow .15s;
+}
+.score-item:hover { border-color: #aaa; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+.score-item.active-item { box-shadow: 0 2px 12px rgba(0,0,0,.12); }
+.score-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+.score-name { font-size: 12px; font-weight: 600; flex: 1; line-height: 1.3; }
+.score-val { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; min-width: 24px; text-align: right; }
+.score-cat { font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* Instruction hint */
+.hint-box {
+  background: var(--ink); color: #ccc; border-radius: 10px;
+  padding: 12px 18px; font-size: 13px; text-align: center;
+  margin-bottom: 20px; max-width: 620px; width: 100%;
+  line-height: 1.6;
+}
+.hint-box strong { color: var(--gold); }
+
+/* Reset / action buttons */
+.wheel-actions {
+  display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; justify-content: center;
+}
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; color: var(--muted); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 11px 20px; font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s;
+}
+.btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
+
+@media (max-width: 560px) {
+  .access-hero { padding: 28px 22px; }
+  .access-hero h2 { font-size: 26px; }
+  .form-card { padding: 24px 18px; }
+  .field-row { grid-template-columns: 1fr; }
+  .score-grid { grid-template-columns: 1fr; }
+  .wheel-title h2 { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="badge"><img src="data:image/png;base64,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" alt="Retorno"></div>
+  <div>
+    <h1>Roda da Vida</h1>
+    <p>Ferramenta de Mentoria · 1ª Sessão</p>
+  </div>
+</header>
+
+<!-- ══════════════ SCREEN: ACCESS ══════════════ -->
+<div id="screen-access" class="screen active">
+  <div class="access-wrap">
+    <div class="access-hero">
+      <h2>Roda da <span>Vida</span></h2>
+      <p>Avalie cada área da sua vida de 0 a 10. A roda revela o equilíbrio (ou desequilíbrio) entre as dimensões pessoal, profissional, relacionamentos e qualidade de vida.</p>
+    </div>
+
+    <div class="form-card" id="card-codigo">
+      <h3><span class="num">1</span> Código de Acesso</h3>
+      <div class="field">
+        <label>Código de acesso</label>
+        <input type="text" id="inp-codigo" placeholder="Digite o código fornecido"
+          autocomplete="off" oninput="resetCodigoError()"
+          onkeydown="if(event.key==='Enter')validateCodigo()"
+          style="text-transform:uppercase;letter-spacing:.1em;font-weight:600;">
+        <div id="codigo-error">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Código inválido. Verifique e tente novamente.</span>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="validateCodigo()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Validar Código
+      </button>
+    </div>
+
+    <div class="form-card" id="card-dados" style="display:none;">
+      <h3><span class="num">2</span> Suas Informações</h3>
+      <div class="field-row">
+        <div class="field">
+          <label>Nome completo</label>
+          <input type="text" id="inp-nome" placeholder="Seu nome">
+        </div>
+        <div class="field">
+          <label>WhatsApp</label>
+          <input type="tel" id="inp-whats" placeholder="(xx) xxxxx-xxxx">
+        </div>
+      </div>
+      <div class="field field-row full">
+        <label>E-mail</label>
+        <input type="email" id="inp-email" placeholder="seu@email.com">
+      </div>
+      <div style="margin-top:14px;">
+        <button class="btn-primary" onclick="startWheel()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Iniciar Roda da Vida
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SCREEN: WHEEL ══════════════ -->
+<div id="screen-wheel" class="screen">
+  <div class="wheel-screen-inner">
+    <div class="wheel-title">
+      <h2>Roda da Vida</h2>
+      <p>Clique nos anéis de cada área para definir sua pontuação (1–10)</p>
+      <div class="wheel-person" id="wheel-person-name"></div>
+    </div>
+
+    <div class="hint-box">
+      Clique em qualquer <strong>anel</strong> dentro de uma fatia para atribuir a pontuação.<br>
+      O anel mais interno = <strong>1</strong> · O anel mais externo = <strong>10</strong>
+    </div>
+
+    <div class="wheel-container">
+      <svg id="wheel-svg" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <div class="score-panel">
+      <div class="score-grid" id="score-grid"></div>
+    </div>
+
+    <div class="wheel-actions">
+      <button class="btn-ghost" onclick="resetWheel()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        Reiniciar
+      </button>
+      <button class="btn-primary" onclick="window.print()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Salvar / Imprimir
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  ACCESS / CODE VALIDATION (same logic as other tools)
+// ══════════════════════════════════════════════════════
+const MASTER_CODE = 'ABC1234';
+const SALT        = 'RTN9K';
+const B36         = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+function toBase36_2(n) {
+  n = ((n % 1296) + 1296) % 1296;
+  return B36[Math.floor(n/36)] + B36[n%36];
+}
+function computeChecksum(dateStr, days) {
+  const combined = dateStr + String(days).padStart(2,'0') + SALT;
+  let total = 0;
+  for (let i = 0; i < combined.length; i++) total += (i+1) * combined.charCodeAt(i);
+  return toBase36_2(total % 1296);
+}
+function isCodeValid(code) {
+  code = code.trim().toUpperCase();
+  if (code === MASTER_CODE) return { ok: true };
+  const m = code.match(/^RET-(\d{6})-(\d{2})-([A-Z0-9]{2})$/);
+  if (!m) return { ok: false, msg: 'Formato inválido.' };
+  const dateStr = m[1], days = parseInt(m[2]), cs = m[3];
+  if (cs !== computeChecksum(dateStr, days)) return { ok: false, msg: 'Código inválido.' };
+  const dd = dateStr.slice(0,2), mm = dateStr.slice(2,4), yy = dateStr.slice(4,6);
+  const start = new Date(2000+parseInt(yy), parseInt(mm)-1, parseInt(dd));
+  const end   = new Date(start); end.setDate(end.getDate()+days);
+  const today = new Date(); today.setHours(0,0,0,0);
+  if (today < start) return { ok: false, msg: 'Código ainda não está ativo.' };
+  if (today > end)   return { ok: false, msg: 'Código expirado.' };
+  return { ok: true };
+}
+function validateCodigo() {
+  const val = document.getElementById('inp-codigo').value;
+  const res = isCodeValid(val);
+  if (res.ok) {
+    document.getElementById('codigo-error').style.display = 'none';
+    document.getElementById('card-codigo').style.opacity = '.55';
+    document.getElementById('card-codigo').style.pointerEvents = 'none';
+    document.getElementById('card-dados').style.display = 'block';
+    document.getElementById('inp-nome').focus();
+  } else {
+    const err = document.getElementById('codigo-error');
+    err.querySelector('span').textContent = res.msg || 'Código inválido.';
+    err.style.display = 'flex';
+    document.getElementById('inp-codigo').style.borderColor = '#d94f34';
+    document.getElementById('inp-codigo').animate([
+      {transform:'translateX(0)'},{transform:'translateX(-6px)'},
+      {transform:'translateX(6px)'},{transform:'translateX(-4px)'},
+      {transform:'translateX(4px)'},{transform:'translateX(0)'}
+    ], {duration:300, easing:'ease-out'});
+  }
+}
+function resetCodigoError() {
+  document.getElementById('codigo-error').style.display = 'none';
+  document.getElementById('inp-codigo').style.borderColor = '';
+}
+
+// URL param auto-fill
+(function() {
+  const p = new URLSearchParams(window.location.search);
+  const c = p.get('code');
+  if (!c) return;
+  document.getElementById('inp-codigo').value = c.toUpperCase();
+  setTimeout(validateCodigo, 120);
+})();
+
+// ══════════════════════════════════════════════════════
+//  WHEEL DATA
+// ══════════════════════════════════════════════════════
+// 12 segments, clockwise from top. Each has: id, label, category, color
+// Layout matches the PDF:
+//   Top    (NW→NE): Plenitude e Felicidade, Espiritualidade, Saúde e Disposição
+//   Right  (NE→SE): Desenvolvimento Intelectual, Equilíbrio Emocional, Realização e Propósito
+//   Bottom (SE→SW): Recursos Financeiros, Contribuição Social, Família
+//   Left   (SW→NW): Desenvolvimento Amoroso, Vida Social, Criatividade/Hobbies & Diversão
+
+const SEGMENTS = [
+  // Angle start from -90° (top), clockwise, 30° each = 12 segments
+  { id:'espiritualidade',    label:'Espiritualidade',              cat:'Qualidade de Vida', color:'#7c5cbf' },
+  { id:'plenitude',          label:'Plenitude e Felicidade',       cat:'Qualidade de Vida', color:'#9b4ec0' },
+  { id:'criatividade',       label:'Criatividade, Hobbies\n& Diversão', cat:'Qualidade de Vida', color:'#c060b8' },
+  { id:'vida_social',        label:'Vida Social',                  cat:'Relacionamentos',   color:'#3a9ad9' },
+  { id:'dev_amoroso',        label:'Desenvolvimento\nAmoroso',     cat:'Relacionamentos',   color:'#2775c4' },
+  { id:'familia',            label:'Família',                      cat:'Relacionamentos',   color:'#1e5fa8' },
+  { id:'contrib_social',     label:'Contribuição\nSocial',         cat:'Profissional',      color:'#e07b28' },
+  { id:'recursos',           label:'Recursos\nFinanceiros',        cat:'Profissional',      color:'#d45e1a' },
+  { id:'realizacao',         label:'Realização e\nPropósito',      cat:'Profissional',      color:'#c0401a' },
+  { id:'equilibrio',         label:'Equilíbrio\nEmocional',        cat:'Pessoal',           color:'#2eaa72' },
+  { id:'dev_intelectual',    label:'Desenvolvimento\nIntelectual', cat:'Pessoal',           color:'#1e9060' },
+  { id:'saude',              label:'Saúde e\nDisposição',          cat:'Pessoal',           color:'#179050' },
+];
+
+// Category quadrant labels
+const CATS = [
+  { label:'QUALIDADE\nDE VIDA', angle:-135 },  // top-left
+  { label:'PESSOAL',            angle:-45  },  // top-right
+  { label:'PROFISSIONAL',       angle:45   },  // bottom-right
+  { label:'RELACIONAMENTOS',    angle:135  },  // bottom-left
+];
+
+// Scores: 0 = not set
+const scores = {};
+SEGMENTS.forEach(s => scores[s.id] = 0);
+
+let userData = {};
+
+// ══════════════════════════════════════════════════════
+//  START
+// ══════════════════════════════════════════════════════
+function startWheel() {
+  const nome  = document.getElementById('inp-nome').value.trim();
+  const whats = document.getElementById('inp-whats').value.trim();
+  const email = document.getElementById('inp-email').value.trim();
+  if (!nome || !whats || !email) { alert('Preencha nome, WhatsApp e e-mail.'); return; }
+  userData = { nome, whats, email };
+
+  document.getElementById('screen-access').classList.remove('active');
+  document.getElementById('screen-wheel').classList.add('active');
+  document.getElementById('wheel-person-name').textContent = nome;
+  drawWheel();
+  renderScoreGrid();
+  window.scrollTo({ top: 0 });
+}
+
+// ══════════════════════════════════════════════════════
+//  DRAW WHEEL
+// ══════════════════════════════════════════════════════
+const CX = 300, CY = 300;
+const R_INNER = 20;   // centre hub radius
+const R_OUTER = 230;  // outermost ring radius
+const N_RINGS  = 10;  // rings 1–10
+const RING_STEP = (R_OUTER - R_INNER) / N_RINGS;
+const N_SEG    = 12;
+const SEG_ANG  = (2 * Math.PI) / N_SEG;
+
+function polarToXY(angle, r) {
+  return {
+    x: CX + r * Math.cos(angle),
+    y: CY + r * Math.sin(angle)
+  };
+}
+
+function segmentPath(segIndex, ringInner, ringOuter) {
+  const a0 = -Math.PI/2 + segIndex * SEG_ANG;
+  const a1 = a0 + SEG_ANG;
+  const p0 = polarToXY(a0, ringInner);
+  const p1 = polarToXY(a1, ringInner);
+  const p2 = polarToXY(a1, ringOuter);
+  const p3 = polarToXY(a0, ringOuter);
+  const largeArc = SEG_ANG > Math.PI ? 1 : 0;
+  return [
+    `M ${p0.x} ${p0.y}`,
+    `A ${ringInner} ${ringInner} 0 ${largeArc} 1 ${p1.x} ${p1.y}`,
+    `L ${p2.x} ${p2.y}`,
+    `A ${ringOuter} ${ringOuter} 0 ${largeArc} 0 ${p3.x} ${p3.y}`,
+    'Z'
+  ].join(' ');
+}
+
+function drawWheel() {
+  const svg = document.getElementById('wheel-svg');
+  svg.innerHTML = '';
+
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  // Drop shadow
+  const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+  filter.setAttribute('id','shadow');
+  filter.innerHTML = '<feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.15"/>';
+  defs.appendChild(filter);
+  svg.appendChild(defs);
+
+  // ── Background circle ──
+  const bgCircle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  bgCircle.setAttribute('cx', CX); bgCircle.setAttribute('cy', CY);
+  bgCircle.setAttribute('r', R_OUTER + 4);
+  bgCircle.setAttribute('fill','#f0ede8'); bgCircle.setAttribute('filter','url(#shadow)');
+  svg.appendChild(bgCircle);
+
+  // ── Segment cells (rings) ──
+  SEGMENTS.forEach((seg, si) => {
+    const score = scores[seg.id];
+    for (let ring = 1; ring <= N_RINGS; ring++) {
+      const rIn  = R_INNER + (ring-1) * RING_STEP;
+      const rOut = R_INNER + ring * RING_STEP;
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d', segmentPath(si, rIn, rOut));
+
+      const filled = ring <= score;
+      const opacity = filled ? (0.3 + ring * 0.07) : 1;
+      path.setAttribute('fill', filled ? seg.color : '#fff');
+      path.setAttribute('fill-opacity', filled ? opacity : 1);
+      path.setAttribute('stroke', '#d8d4cc');
+      path.setAttribute('stroke-width', '0.8');
+      path.style.cursor = 'pointer';
+      path.style.transition = 'fill .15s, fill-opacity .15s';
+
+      // Hover effect
+      path.addEventListener('mouseenter', () => {
+        if (ring > score) {
+          path.setAttribute('fill', seg.color);
+          path.setAttribute('fill-opacity', '0.18');
+        }
+      });
+      path.addEventListener('mouseleave', () => {
+        if (ring > score) {
+          path.setAttribute('fill', '#fff');
+          path.setAttribute('fill-opacity', '1');
+        }
+      });
+
+      // Click handler
+      path.addEventListener('click', () => {
+        scores[seg.id] = ring;
+        drawWheel();
+        renderScoreGrid();
+      });
+
+      svg.appendChild(path);
+    }
+  });
+
+  // ── Segment divider lines ──
+  for (let si = 0; si < N_SEG; si++) {
+    const angle = -Math.PI/2 + si * SEG_ANG;
+    const p0 = polarToXY(angle, R_INNER);
+    const p1 = polarToXY(angle, R_OUTER);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', p0.x); line.setAttribute('y1', p0.y);
+    line.setAttribute('x2', p1.x); line.setAttribute('y2', p1.y);
+    line.setAttribute('stroke', '#bbb'); line.setAttribute('stroke-width', '1.2');
+    svg.appendChild(line);
+  }
+
+  // ── Ring circles ──
+  for (let ring = 1; ring <= N_RINGS; ring++) {
+    const r = R_INNER + ring * RING_STEP;
+    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx', CX); circle.setAttribute('cy', CY);
+    circle.setAttribute('r', r);
+    circle.setAttribute('fill', 'none');
+    circle.setAttribute('stroke', ring % 5 === 0 ? '#aaa' : '#d0ccc5');
+    circle.setAttribute('stroke-width', ring % 5 === 0 ? '1.5' : '0.7');
+    svg.appendChild(circle);
+  }
+
+  // ── Ring number labels (just 5 and 10) ──
+  [5, 10].forEach(n => {
+    const r = R_INNER + n * RING_STEP;
+    const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+    label.setAttribute('x', CX + 2);
+    label.setAttribute('y', CY - r + 11);
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('font-size', '9');
+    label.setAttribute('font-family', 'DM Sans, sans-serif');
+    label.setAttribute('fill', '#888');
+    label.textContent = n;
+    svg.appendChild(label);
+  });
+
+  // ── Centre hub ──
+  const hub = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  hub.setAttribute('cx', CX); hub.setAttribute('cy', CY);
+  hub.setAttribute('r', R_INNER);
+  hub.setAttribute('fill', '#fff');
+  hub.setAttribute('stroke', '#ccc'); hub.setAttribute('stroke-width', '1.5');
+  svg.appendChild(hub);
+
+  // ── Segment labels ──
+  SEGMENTS.forEach((seg, si) => {
+    const midAngle = -Math.PI/2 + si * SEG_ANG + SEG_ANG/2;
+    const labelR   = R_OUTER + 28;
+    const lx = CX + labelR * Math.cos(midAngle);
+    const ly = CY + labelR * Math.sin(midAngle);
+
+    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x', lx);
+    text.setAttribute('y', ly);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'middle');
+    text.setAttribute('font-size', '8.5');
+    text.setAttribute('font-family', 'DM Sans, sans-serif');
+    text.setAttribute('font-weight', '600');
+    text.setAttribute('fill', seg.color);
+
+    const lines = seg.label.split('\n');
+    const lineH = 10;
+    const startDY = -(lines.length - 1) * lineH / 2;
+    lines.forEach((line, li) => {
+      const tspan = document.createElementNS('http://www.w3.org/2000/svg','tspan');
+      tspan.setAttribute('x', lx);
+      tspan.setAttribute('dy', li === 0 ? startDY : lineH);
+      tspan.textContent = line;
+      text.appendChild(tspan);
+    });
+    svg.appendChild(text);
+  });
+
+  // ── Score value badge on filled segments ──
+  SEGMENTS.forEach((seg, si) => {
+    const score = scores[seg.id];
+    if (score === 0) return;
+    const midAngle = -Math.PI/2 + si * SEG_ANG + SEG_ANG/2;
+    const rMid = R_INNER + (score - 0.5) * RING_STEP;
+    const bx = CX + rMid * Math.cos(midAngle);
+    const by = CY + rMid * Math.sin(midAngle);
+
+    const badge = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    badge.setAttribute('cx', bx); badge.setAttribute('cy', by);
+    badge.setAttribute('r', '9');
+    badge.setAttribute('fill', seg.color);
+    badge.setAttribute('stroke', '#fff'); badge.setAttribute('stroke-width', '1.5');
+    svg.appendChild(badge);
+
+    const bLabel = document.createElementNS('http://www.w3.org/2000/svg','text');
+    bLabel.setAttribute('x', bx); bLabel.setAttribute('y', by);
+    bLabel.setAttribute('text-anchor', 'middle');
+    bLabel.setAttribute('dominant-baseline', 'middle');
+    bLabel.setAttribute('font-size', '8');
+    bLabel.setAttribute('font-family', 'DM Sans, sans-serif');
+    bLabel.setAttribute('font-weight', '700');
+    bLabel.setAttribute('fill', '#fff');
+    bLabel.setAttribute('pointer-events', 'none');
+    bLabel.textContent = score;
+    svg.appendChild(bLabel);
+  });
+
+  // ── Category labels (outer) ──
+  const catRadius = R_OUTER + 72;
+  CATS.forEach(cat => {
+    const rad = cat.angle * Math.PI / 180;
+    const cx2 = CX + catRadius * Math.cos(rad);
+    const cy2 = CY + catRadius * Math.sin(rad);
+
+    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x', cx2);
+    text.setAttribute('y', cy2);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'middle');
+    text.setAttribute('font-size', '11');
+    text.setAttribute('font-family', 'Playfair Display, serif');
+    text.setAttribute('font-weight', '700');
+    text.setAttribute('fill', '#222');
+    text.setAttribute('letter-spacing', '0.5');
+
+    cat.label.split('\n').forEach((line, li) => {
+      const tspan = document.createElementNS('http://www.w3.org/2000/svg','tspan');
+      tspan.setAttribute('x', cx2);
+      tspan.setAttribute('dy', li === 0 ? 0 : 14);
+      tspan.textContent = line;
+      text.appendChild(tspan);
+    });
+    svg.appendChild(text);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  SCORE GRID
+// ══════════════════════════════════════════════════════
+function renderScoreGrid() {
+  const grid = document.getElementById('score-grid');
+  grid.innerHTML = SEGMENTS.map(seg => {
+    const sc  = scores[seg.id];
+    const pct = sc * 10;
+    const col = sc === 0 ? '#ccc' : seg.color;
+    return `
+      <div class="score-item" style="border-color:${sc > 0 ? seg.color+'55' : ''}" onclick="highlightSeg('${seg.id}')">
+        <div class="score-dot" style="background:${seg.color}"></div>
+        <div style="flex:1;min-width:0;">
+          <div class="score-cat">${seg.cat}</div>
+          <div class="score-name">${seg.label.replace('\n',' ')}</div>
+          <div style="height:4px;background:#f0ede8;border-radius:99px;margin-top:5px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:${col};border-radius:99px;transition:width .4s ease;"></div>
+          </div>
+        </div>
+        <div class="score-val" style="color:${col}">${sc > 0 ? sc : '–'}</div>
+      </div>`;
+  }).join('');
+}
+
+function highlightSeg(id) {
+  // Pulse the segment on the wheel
+  drawWheel();
+}
+
+// ══════════════════════════════════════════════════════
+//  RESET
+// ══════════════════════════════════════════════════════
+function resetWheel() {
+  if (!confirm('Reiniciar todos os valores da roda?')) return;
+  SEGMENTS.forEach(s => scores[s.id] = 0);
+  drawWheel();
+  renderScoreGrid();
+}
+</script>
+</body>
+</html>

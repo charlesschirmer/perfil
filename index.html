@@ -182,7 +182,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(
     <h2>Ferramentas de <span>Desenvolvimento</span></h2>
     <p>Avaliações e instrumentos de autoconhecimento para acelerar o desenvolvimento profissional. Cada ferramenta gera um resultado personalizado com perfil gráfico.</p>
     <div class="hero-stats">
-      <div class="hero-stat"><strong id="stat-tools">1</strong><span>Ferramentas ativas</span></div>
+      <div class="hero-stat"><strong id="stat-tools">2</strong><span>Ferramentas ativas</span></div>
       <div class="hero-stat"><strong>Em breve</strong><span>Novas ferramentas</span></div>
       <div class="hero-stat"><strong>100%</strong><span>Online · Sem instalação</span></div>
     </div>
@@ -227,17 +227,16 @@ const TOOLS = [
     tags: ['Auto-avaliação', '~15 min', '20 habilidades'],
     active: true,
   },
-  // ── Próximas ferramentas – descomente e preencha quando pronto ──
-  // {
-  //   id: 'lideranca',
-  //   name: 'Indicador de Estilo de Liderança',
-  //   desc: 'Avalie seu estilo predominante de liderança e descubra pontos de desenvolvimento.',
-  //   file: 'indicador-lideranca.html',
-  //   icon: '🏆',
-  //   iconBg: '#f0f5fd',
-  //   tags: ['Auto-avaliação', '~12 min'],
-  //   active: false,
-  // },
+  {
+    id: 'roda-da-vida',
+    name: 'Roda da Vida',
+    desc: 'Avalie 12 áreas da sua vida de 1 a 10 e visualize o equilíbrio entre as dimensões pessoal, profissional, relacionamentos e qualidade de vida.',
+    file: 'roda-da-vida.html',
+    icon: '⭕',
+    iconBg: '#f0f5fd',
+    tags: ['1ª Sessão', '~10 min', '12 áreas'],
+    active: true,
+  },
 ];
 
 // ── Render tool cards ──────────────────────────────────────
