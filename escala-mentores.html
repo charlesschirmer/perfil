@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Escala de Mentores — Retorno</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #111118;
+  --paper: #f8f7f3;
+  --card: #ffffff;
+  --accent: #c9472f;
+  --gold: #c9a84c;
+  --muted: #888480;
+  --border: #e4e0d8;
+  --soc-color: #2f6ec9;
+  --dom-color: #c9472f;
+  --rec-color: #2e9e66;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
+
+/* HEADER */
+.site-header { background: var(--ink); color: #fff; padding: 10px 28px; display: flex; align-items: center; gap: 16px; }
+.site-header .badge { height: 60px; display: flex; align-items: center; flex-shrink: 0; background: #fff; border-radius: 10px; padding: 5px 10px; }
+.site-header .badge img { height: 50px; width: auto; display: block; }
+.site-header h1 { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; }
+.site-header p { font-size: 11px; color: #999; margin-top: 2px; }
+@media(max-width:600px){
+  .site-header { padding: 8px 14px; gap: 10px; }
+  .site-header .badge { height: 44px; } .site-header .badge img { height: 36px; }
+  .site-header h1 { font-size: 14px; } .site-header p { display:none; }
+}
+
+/* SCREENS */
+.screen { display: none; }
+.screen.active { display: flex; flex-direction: column; flex: 1; }
+
+/* ═══ ACCESS SCREEN ═══ */
+.access-wrap { max-width: 560px; margin: 0 auto; padding: 48px 20px 80px; display: flex; flex-direction: column; gap: 22px; width: 100%; }
+.access-hero { background: var(--ink); border-radius: 18px; padding: 44px; color: #fff; position: relative; overflow: hidden; }
+.access-hero::before { content: 'M'; position: absolute; right: -10px; top: -30px; font-family: 'Playfair Display', serif; font-size: 280px; font-weight: 900; color: rgba(255,255,255,.04); line-height: 1; pointer-events: none; }
+.access-hero h2 { font-family: 'Playfair Display', serif; font-size: 30px; line-height: 1.15; margin-bottom: 12px; }
+.access-hero h2 span { color: var(--gold); }
+.access-hero p { font-size: 13.5px; line-height: 1.75; color: #c0bdb8; }
+.access-stats { display: flex; gap: 14px; margin-top: 24px; flex-wrap: wrap; }
+.access-stats div { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 12px 16px; text-align: center; }
+.access-stats strong { display: block; font-size: 22px; font-family: 'Playfair Display', serif; color: var(--gold); }
+.access-stats span { font-size: 11px; color: #aaa; }
+
+.form-card { background: var(--card); border-radius: 14px; border: 1px solid var(--border); padding: 28px 32px; }
+.form-card h3 { font-family: 'Playfair Display', serif; font-size: 19px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+.form-card h3 .num { width: 28px; height: 28px; background: var(--accent); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.field { margin-bottom: 13px; }
+.field label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.field input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--paper); outline: none; transition: border-color .18s, box-shadow .18s; }
+.field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,71,47,.1); background: #fff; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+@media(max-width:560px){ .field-row { grid-template-columns: 1fr; } .access-hero { padding: 28px 22px; } .form-card { padding: 22px 18px; } }
+
+#codigo-error { display:none; margin-top:8px; padding:10px 14px; background:#fdf2ef; border:1.5px solid #d94f34; border-radius:8px; font-size:13px; color:#d94f34; align-items:center; gap:8px; }
+
+.btn-primary { display: inline-flex; align-items: center; gap: 9px; background: var(--accent); color: #fff; border: none; border-radius: 11px; padding: 13px 28px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform .14s, box-shadow .14s; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(201,71,47,.32); }
+.btn-secondary { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--muted); border: 1.5px solid var(--border); border-radius: 11px; padding: 12px 22px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; }
+.btn-secondary:hover { border-color: var(--ink); color: var(--ink); }
+
+/* ═══ PROGRESS BAR ═══ */
+.progress-wrap { background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; padding: 11px 28px; display: flex; align-items: center; gap: 16px; }
+.progress-label { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.progress-track { flex: 1; height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); border-radius: 99px; transition: width .4s ease; }
+.progress-count { font-size: 13px; font-weight: 700; white-space: nowrap; }
+
+/* ═══ TEST SCREEN ═══ */
+.test-wrap { max-width: 700px; margin: 0 auto; padding: 32px 20px 80px; width: 100%; }
+
+/* Section header */
+.section-header {
+  display: flex; align-items: center; gap: 14px;
+  margin: 36px 0 20px;
+}
+.section-header:first-child { margin-top: 0; }
+.section-header hr { flex: 1; border: none; border-top: 1.5px solid var(--border); }
+.section-pill {
+  font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  padding: 4px 14px; border-radius: 99px; border: 2px solid; white-space: nowrap;
+}
+
+/* Question card */
+.q-card {
+  background: var(--card); border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 18px 20px; margin-bottom: 10px;
+  animation: fadeUp .2s ease both;
+  transition: border-color .15s;
+}
+.q-card.answered { border-color: rgba(46,158,102,.35); background: #fbfffe; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+.q-num-text { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 6px; letter-spacing: .04em; }
+.q-text { font-size: 14px; font-weight: 500; line-height: 1.55; margin-bottom: 14px; }
+
+.q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media(max-width:480px){ .q-options { grid-template-columns: 1fr; } }
+
+.opt-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 9px;
+  background: var(--paper); cursor: pointer; transition: all .13s;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--ink);
+  text-align: left;
+}
+.opt-btn:hover { border-color: #aaa; background: #fff; }
+.opt-btn.sel-a { border-color: var(--soc-color); background: #f0f5fd; color: var(--soc-color); font-weight: 600; }
+.opt-btn.sel-b { border-color: var(--rec-color); background: #eef8f3; color: #1a7a4e; font-weight: 600; }
+.opt-letter {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800;
+  background: var(--border); color: var(--muted);
+  transition: background .13s, color .13s;
+}
+.opt-btn.sel-a .opt-letter { background: var(--soc-color); color: #fff; }
+.opt-btn.sel-b .opt-letter { background: var(--rec-color); color: #fff; }
+
+.nav-btns { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; gap: 12px; }
+@media(max-width:480px){ .btn-primary, .btn-secondary { flex:1; justify-content:center; padding: 12px; } }
+
+/* ═══ RESULTS SCREEN ═══ */
+.results-wrap { max-width: 760px; margin: 0 auto; padding: 36px 20px 80px; width: 100%; }
+
+.result-hero { background: var(--ink); border-radius: 18px; padding: 36px 40px; color: #fff; margin-bottom: 28px; position: relative; overflow: hidden; }
+.result-hero::after { content: ''; position: absolute; right: 40px; top: 50%; transform: translateY(-50%); width: 100px; height: 100px; border: 3px solid rgba(201,168,76,.2); border-radius: 50%; }
+.result-hero h2 { font-family: 'Playfair Display', serif; font-size: 26px; margin-bottom: 6px; }
+.result-hero .pinfo strong { color: var(--gold); font-size: 15px; display: block; }
+.result-hero .pinfo span { font-size: 12px; color: #aaa; }
+
+/* Score summary cards */
+.score-summary { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
+@media(max-width:580px){ .score-summary { grid-template-columns: 1fr; } }
+
+.dim-card {
+  background: var(--card); border: 1.5px solid var(--border); border-radius: 14px;
+  padding: 22px 20px; text-align: center; position: relative; overflow: hidden;
+}
+.dim-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+.dim-card.soc::before { background: var(--soc-color); }
+.dim-card.dom::before { background: var(--dom-color); }
+.dim-card.rec::before { background: var(--rec-color); }
+.dim-label { font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+.dim-scores { display: flex; justify-content: center; gap: 20px; margin-bottom: 12px; }
+.dim-score-item { text-align: center; }
+.dim-score-item .letter { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--muted); }
+.dim-score-item .val { font-family: 'Playfair Display', serif; font-size: 38px; font-weight: 900; line-height: 1; }
+.dim-score-item .val.high { color: var(--soc-color); }
+.dim-tag { font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 99px; display: inline-block; }
+.tag-soc-a { background: #f0f5fd; color: var(--soc-color); }
+.tag-soc-b { background: #f0f5fd; color: var(--soc-color); }
+.tag-dom-a { background: #fdf2ef; color: var(--dom-color); }
+.tag-dom-b { background: #fdf2ef; color: var(--dom-color); }
+.tag-rec-a { background: #eef8f3; color: var(--rec-color); }
+.tag-rec-b { background: #eef8f3; color: var(--rec-color); }
+
+/* Interpretation cards */
+.interp-section { margin-bottom: 20px; }
+.interp-card {
+  background: var(--card); border: 1.5px solid var(--border); border-radius: 14px;
+  padding: 24px 28px; margin-bottom: 16px;
+}
+.interp-card h3 {
+  font-family: 'Playfair Display', serif; font-size: 20px;
+  display: flex; align-items: center; gap: 12px; margin-bottom: 6px;
+}
+.interp-card .dim-badge {
+  font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 99px;
+}
+.interp-card .score-line { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+.interp-card .score-line strong { color: var(--ink); }
+.interp-card p { font-size: 14px; line-height: 1.75; color: #333; margin-bottom: 12px; }
+.interp-card p:last-child { margin-bottom: 0; }
+
+/* Profile meter bar */
+.profile-bar-wrap { margin: 14px 0; }
+.profile-bar-label { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.profile-bar-track { height: 10px; background: var(--border); border-radius: 99px; position: relative; overflow: hidden; }
+.profile-bar-fill { height: 100%; border-radius: 99px; transition: width .6s ease; }
+.profile-bar-marker { position: absolute; top: -2px; height: 14px; width: 3px; background: var(--ink); border-radius: 2px; transform: translateX(-50%); }
+
+/* Mentoring conclusion */
+.conclusion-card {
+  background: var(--ink); color: #fff; border-radius: 14px; padding: 28px 32px; margin-bottom: 24px;
+}
+.conclusion-card h3 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--gold); margin-bottom: 14px; }
+.conclusion-card p { font-size: 14px; line-height: 1.75; color: #ccc; margin-bottom: 10px; }
+.conclusion-card p:last-child { margin-bottom: 0; }
+.conclusion-card strong { color: #fff; }
+
+.result-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+.result-actions .btn-primary, .result-actions .btn-secondary { flex: 1; justify-content: center; }
+
+@media print {
+  .site-header, .progress-wrap, .screen:not(.active), .result-actions, .no-print { display: none !important; }
+  .results-wrap { padding: 0; }
+  .interp-card, .dim-card, .conclusion-card { break-inside: avoid; }
+}
+@media(max-width:600px){
+  .result-hero { padding: 24px 20px; } .result-hero h2 { font-size: 22px; }
+  .interp-card { padding: 18px 16px; }
+  .result-actions { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="badge"><img src="data:image/png;base64,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" alt="Retorno"></div>
+  <div>
+    <h1>A Escala de Mentores</h1>
+    <p>Ferramenta de Mentoria · Autoavaliação</p>
+  </div>
+</header>
+
+<!-- ══════════ ACCESS ══════════ -->
+<div id="screen-access" class="screen active">
+  <div class="access-wrap">
+    <div class="access-hero">
+      <h2>A Escala de <span>Mentores</span></h2>
+      <p>Inspirada no FIRO-B®, esta escala avalia três dimensões essenciais para um relacionamento de mentoring eficaz: <strong style="color:#fff">Sociabilidade</strong>, <strong style="color:#fff">Dominância</strong> e <strong style="color:#fff">Receptividade</strong>.</p>
+      <div class="access-stats">
+        <div><strong>39</strong><span>Questões</span></div>
+        <div><strong>3</strong><span>Dimensões</span></div>
+        <div><strong>~8 min</strong><span>Duração</span></div>
+      </div>
+    </div>
+
+    <div class="form-card" id="card-codigo">
+      <h3><span class="num">1</span> Código de Acesso</h3>
+      <div class="field">
+        <label>Código de acesso</label>
+        <input type="text" id="inp-codigo" placeholder="Digite o código fornecido"
+          autocomplete="off" oninput="resetCodigoError()"
+          onkeydown="if(event.key==='Enter')validateCodigo()"
+          style="text-transform:uppercase;letter-spacing:.1em;font-weight:600;">
+        <div id="codigo-error">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Código inválido. Verifique e tente novamente.</span>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="validateCodigo()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Validar Código
+      </button>
+    </div>
+
+    <div class="form-card" id="card-dados" style="display:none;">
+      <h3><span class="num">2</span> Suas Informações</h3>
+      <div class="field-row">
+        <div class="field"><label>Nome completo</label><input type="text" id="inp-nome" placeholder="Seu nome"></div>
+        <div class="field"><label>WhatsApp</label><input type="tel" id="inp-whats" placeholder="(xx) xxxxx-xxxx"></div>
+      </div>
+      <div class="field"><label>E-mail</label><input type="email" id="inp-email" placeholder="seu@email.com"></div>
+      <div style="margin-top:14px;">
+        <button class="btn-primary" onclick="startTest()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Iniciar Avaliação
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TEST ══════════ -->
+<div id="screen-test" class="screen">
+  <div class="progress-wrap">
+    <span class="progress-label">Progresso</span>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <span class="progress-count" id="progress-count">0 / 39</span>
+  </div>
+  <div class="test-wrap" id="test-wrap"></div>
+</div>
+
+<!-- ══════════ RESULTS ══════════ -->
+<div id="screen-results" class="screen">
+  <div class="results-wrap">
+    <div class="result-hero">
+      <h2>Escala de Mentores</h2>
+      <div class="pinfo" id="res-pinfo"></div>
+    </div>
+    <div class="score-summary" id="score-summary"></div>
+    <div class="interp-section" id="interp-section"></div>
+    <div class="conclusion-card" id="conclusion-card"></div>
+    <div class="result-actions no-print">
+      <button class="btn-secondary" onclick="window.print()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir / Salvar PDF
+      </button>
+      <button class="btn-primary" onclick="restart()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        Nova Avaliação
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  CODE VALIDATION
+// ══════════════════════════════════════════════
+const MASTER_CODE = 'ABC1234', SALT = 'RTN9K';
+const B36 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function toBase36_2(n) { n=((n%1296)+1296)%1296; return B36[Math.floor(n/36)]+B36[n%36]; }
+function computeChecksum(ds,days){ const s=ds+String(days).padStart(2,'0')+SALT; let t=0; for(let i=0;i<s.length;i++) t+=(i+1)*s.charCodeAt(i); return toBase36_2(t%1296); }
+function isCodeValid(code){
+  code=code.trim().toUpperCase();
+  if(code===MASTER_CODE) return {ok:true};
+  const m=code.match(/^RET-(\d{6})-(\d{2})-([A-Z0-9]{2})$/);
+  if(!m) return {ok:false,msg:'Formato inválido.'};
+  const ds=m[1],days=parseInt(m[2]),cs=m[3];
+  if(cs!==computeChecksum(ds,days)) return {ok:false,msg:'Código inválido.'};
+  const dd=ds.slice(0,2),mm=ds.slice(2,4),yy=ds.slice(4,6);
+  const start=new Date(2000+parseInt(yy),parseInt(mm)-1,parseInt(dd));
+  const end=new Date(start); end.setDate(end.getDate()+days);
+  const today=new Date(); today.setHours(0,0,0,0);
+  if(today<start) return {ok:false,msg:'Código ainda não está ativo.'};
+  if(today>end) return {ok:false,msg:'Código expirado.'};
+  return {ok:true};
+}
+function validateCodigo(){
+  const res=isCodeValid(document.getElementById('inp-codigo').value);
+  if(res.ok){
+    document.getElementById('codigo-error').style.display='none';
+    document.getElementById('card-codigo').style.opacity='.55';
+    document.getElementById('card-codigo').style.pointerEvents='none';
+    document.getElementById('card-dados').style.display='block';
+    document.getElementById('inp-nome').focus();
+  } else {
+    const err=document.getElementById('codigo-error');
+    err.querySelector('span').textContent=res.msg||'Código inválido.';
+    err.style.display='flex';
+    document.getElementById('inp-codigo').style.borderColor='#d94f34';
+    document.getElementById('inp-codigo').animate([
+      {transform:'translateX(0)'},{transform:'translateX(-6px)'},
+      {transform:'translateX(6px)'},{transform:'translateX(0)'}
+    ],{duration:300,easing:'ease-out'});
+  }
+}
+function resetCodigoError(){
+  document.getElementById('codigo-error').style.display='none';
+  document.getElementById('inp-codigo').style.borderColor='';
+}
+(function(){
+  const p=new URLSearchParams(window.location.search),c=p.get('code');
+  if(!c) return;
+  document.getElementById('inp-codigo').value=c.toUpperCase();
+  setTimeout(validateCodigo,120);
+})();
+
+// ══════════════════════════════════════════════
+//  QUESTIONS DATA
+// ══════════════════════════════════════════════
+// Dimensão de cada questão:
+// S = Sociabilidade, D = Dominância, R = Receptividade
+const QUESTIONS = [
+  { n:1,  dim:'S', text:'As pessoas provavelmente me consideram:', a:'inflexível', b:'fácil de persuadir' },
+  { n:2,  dim:'D', text:'Os dias de trabalho de que mais gosto são:', a:'imprevisíveis', b:'planejados' },
+  { n:3,  dim:'R', text:'Quando o assunto é comemoração, a maioria das organizações precisa:', a:'de menos', b:'de mais' },
+  { n:4,  dim:'S', text:'Quando avalio indivíduos, minhas decisões são baseadas em:', a:'justiça', b:'ordenada' },
+  { n:5,  dim:'D', text:'Minha abordagem para planejar minhas atividades pessoais é:', a:'informal', b:'ordenada' },
+  { n:6,  dim:'R', text:'As pessoas geralmente me vêem com alguém:', a:'formal', b:'informal' },
+  { n:7,  dim:'S', text:'Quando se trata de situações sociais, normalmente:', a:'resisto a participar', b:'adoro participar' },
+  { n:8,  dim:'D', text:'Gosto de passar meu tempo livre de forma razoavelmente:', a:'espontânea', b:'rotineira' },
+  { n:9,  dim:'R', text:'Acredito que os líderes deveriam se preocupar mais com:', a:'direitos do funcionário', b:'sentimentos do funcionário' },
+  { n:10, dim:'S', text:'Quando encontro pessoas que precisam de ajuda, é mais provável que eu:', a:'evitá-las', b:'ajudá-las' },
+  { n:11, dim:'D', text:'Quando estou em um grupo, geralmente:', a:'acompanho', b:'lidero' },
+  { n:12, dim:'R', text:'A maioria das pessoas me vê como:', a:'reservado', b:'compreensivo' },
+  { n:13, dim:'S', text:'Meus amigos sabem que sou:', a:'firme', b:'compreensivo' },
+  { n:14, dim:'D', text:'Se eu estivesse em um grupo de desconhecidos, a maioria provavelmente se lembraria de mim como um:', a:'ouvinte', b:'líder' },
+  { n:15, dim:'R', text:'Quando se trata de expressar meus sentimentos, a maioria das pessoas provavelmente me vê como:', a:'reservado', b:'à vontade' },
+  { n:16, dim:'S', text:'Quando as pessoas das quais dependo cometem erros, geralmente sou:', a:'paciente', b:'impaciente' },
+  { n:17, dim:'D', text:'Quando vou a restaurantes, geralmente peço pratos que:', a:'parecem especiais', b:'sei que gosto' },
+  { n:18, dim:'R', text:'Em geral, prefiro:', a:'o teatro', b:'uma festa' },
+  { n:19, dim:'S', text:'Em um conflito, quando há raiva envolvida, meu estopim emocional geralmente é:', a:'curto', b:'longo' },
+  { n:20, dim:'D', text:'Em uma emergência, eu provavelmente ficaria:', a:'calmo', b:'ansioso' },
+  { n:21, dim:'R', text:'Prefiro me expressar de forma:', a:'indireta', b:'direta' },
+  { n:22, dim:'S', text:'Sou mais dominado pela:', a:'lógica', b:'emoção' },
+  { n:23, dim:'D', text:'Quando em situações novas e desconhecidas, geralmente fico:', a:'despreocupado', b:'preocupado' },
+  { n:24, dim:'R', text:'Em uma situação social festiva, geralmente sou:', a:'passivo', b:'ativo' },
+  { n:25, dim:'S', text:'Quando sou acusado de alguma coisa que não fiz, minha primeira reação é:', a:'ouvir', b:'me defender' },
+  { n:26, dim:'D', text:'Se estou em uma situação na qual perco ou me decepciono, fico:', a:'triste', b:'furioso' },
+  { n:27, dim:'R', text:'Se alguém me procurasse em prantos, provavelmente me sentiria:', a:'incomodado', b:'à vontade' },
+  { n:28, dim:'S', text:'A maioria das pessoas me vê como:', a:'um otimista', b:'um pessimista' },
+  { n:29, dim:'D', text:'As pessoas geralmente me vêem como:', a:'não crítico', b:'crítico' },
+  { n:30, dim:'R', text:'Se as pessoas tivessem de fazer uma escolha forçada, diriam que sou:', a:'muito quieto', b:'muito barulhento' },
+  { n:31, dim:'S', text:'Ao final de uma longa festa, geralmente fico:', a:'exausto', b:'animadíssimo' },
+  { n:32, dim:'D', text:'Quando trabalho em projetos, sou melhor para:', a:'começá-los', b:'finalizá-los' },
+  { n:33, dim:'R', text:'Acredito que as pessoas devem abordar o trabalho com:', a:'dedicação', b:'inspiração' },
+  { n:34, dim:'S', text:'Minhas gafes sociais geralmente me deixam:', a:'constrangido', b:'descontraído' },
+  { n:35, dim:'D', text:'Quando minha empresa anuncia uma grande mudança, fico:', a:'entusiasmado', b:'preocupado' },
+  { n:36, dim:'R', text:'É bem provável que as pessoas me vejam como:', a:'duro', b:'afetuoso' },
+  { n:37, dim:'S', text:'Depois de um dia árduo, gosto de relaxar:', a:'sozinho', b:'com outros' },
+  { n:38, dim:'D', text:'Mudança quase sempre é minha:', a:'amiga', b:'adversária' },
+  { n:39, dim:'R', text:'Meu trabalho e minha vida social:', a:'são separados', b:'frequentemente se sobrepõem' },
+];
+
+const PER_PAGE = 7;
+let answers = {}; // { n: 'a'|'b' }
+let userData = {};
+let currentPage = 0;
+
+// ══════════════════════════════════════════════
+//  START
+// ══════════════════════════════════════════════
+function startTest(){
+  const nome=document.getElementById('inp-nome').value.trim();
+  const whats=document.getElementById('inp-whats').value.trim();
+  const email=document.getElementById('inp-email').value.trim();
+  if(!nome||!whats||!email){ alert('Preencha nome, WhatsApp e e-mail.'); return; }
+  userData={nome,whats,email};
+  answers={};
+  currentPage=0;
+  document.getElementById('screen-access').classList.remove('active');
+  document.getElementById('screen-test').classList.add('active');
+  renderPage();
+  window.scrollTo({top:0});
+}
+
+// ══════════════════════════════════════════════
+//  RENDER PAGE
+// ══════════════════════════════════════════════
+const DIM_LABELS = { S:'Sociabilidade', D:'Dominância', R:'Receptividade' };
+const DIM_COLORS = { S:'#2f6ec9', D:'#c9472f', R:'#2e9e66' };
+
+function renderPage(){
+  const wrap = document.getElementById('test-wrap');
+  const start = currentPage * PER_PAGE;
+  const end   = Math.min(start + PER_PAGE, QUESTIONS.length);
+  const pageQs = QUESTIONS.slice(start, end);
+
+  let lastDim = null;
+  let html = '';
+
+  pageQs.forEach(q => {
+    if(q.dim !== lastDim){
+      const color = DIM_COLORS[q.dim];
+      html += `<div class="section-header">
+        <hr/>
+        <span class="section-pill" style="color:${color};border-color:${color}40;background:${color}10">${DIM_LABELS[q.dim]}</span>
+        <hr/>
+      </div>`;
+      lastDim = q.dim;
+    }
+    const ans = answers[q.n];
+    const selA = ans==='a' ? 'sel-a' : '';
+    const selB = ans==='b' ? 'sel-b' : '';
+    const answered = ans ? 'answered' : '';
+    html += `
+      <div class="q-card ${answered}" id="qcard-${q.n}">
+        <div class="q-num-text">Questão ${q.n} · ${DIM_LABELS[q.dim]}</div>
+        <div class="q-text">${q.text}</div>
+        <div class="q-options">
+          <button class="opt-btn ${selA}" onclick="setAnswer(${q.n},'a')">
+            <span class="opt-letter">A</span>${q.a}
+          </button>
+          <button class="opt-btn ${selB}" onclick="setAnswer(${q.n},'b')">
+            <span class="opt-letter">B</span>${q.b}
+          </button>
+        </div>
+      </div>`;
+  });
+
+  // Nav buttons
+  const isLast = end >= QUESTIONS.length;
+  html += `<div class="nav-btns">
+    ${currentPage > 0
+      ? `<button class="btn-secondary" onclick="prevPage()">← Anterior</button>`
+      : '<div></div>'
+    }
+    ${isLast
+      ? `<button class="btn-primary" style="background:var(--rec-color)" onclick="showResults()">Ver Resultado <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>`
+      : `<button class="btn-primary" onclick="nextPage()">Próximo <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>`
+    }
+  </div>`;
+
+  wrap.innerHTML = html;
+  updateProgress();
+}
+
+function setAnswer(n, val){
+  answers[n] = val;
+  // Re-render just this card
+  const q = QUESTIONS.find(q=>q.n===n);
+  const card = document.getElementById('qcard-'+n);
+  if(!card) return;
+  card.classList.add('answered');
+  card.querySelectorAll('.opt-btn').forEach((btn,i)=>{
+    const letter = i===0?'a':'b';
+    btn.className = 'opt-btn' + (val===letter ? (letter==='a'?' sel-a':' sel-b') : '');
+  });
+  updateProgress();
+}
+
+function updateProgress(){
+  const done = Object.keys(answers).length;
+  const pct  = (done/39)*100;
+  document.getElementById('progress-fill').style.width = pct+'%';
+  document.getElementById('progress-count').textContent = done+' / 39';
+}
+
+function nextPage(){
+  const start=currentPage*PER_PAGE, end=Math.min(start+PER_PAGE,QUESTIONS.length);
+  const missing = QUESTIONS.slice(start,end).filter(q=>!answers[q.n]);
+  if(missing.length){ alert('Por favor, responda todas as questões desta página antes de continuar.'); return; }
+  currentPage++;
+  renderPage();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function prevPage(){ currentPage--; renderPage(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+// ══════════════════════════════════════════════
+//  RESULTS
+// ══════════════════════════════════════════════
+function calcScores(){
+  const dims = { S:{a:0,b:0}, D:{a:0,b:0}, R:{a:0,b:0} };
+  QUESTIONS.forEach(q=>{
+    const ans = answers[q.n];
+    if(ans) dims[q.dim][ans]++;
+  });
+  return dims;
+}
+
+function getProfile(dim, scores){
+  // Returns {label, tag, description, advice} based on which side is dominant
+  const {a,b} = scores;
+  const total = a+b;
+  const bPct = total>0 ? Math.round(b/total*100) : 50;
+
+  if(dim==='S'){
+    if(b>a) return { tag:'Sociável', profile:'alto-b',
+      desc:'Você costuma ser extrovertido e orientado para as pessoas. Aprecia a companhia dos outros e tende a construir relacionamentos com facilidade.',
+      advice:'No mentoring, sua sociabilidade facilita o desenvolvimento de empatia e a condução de diálogos. Atente para não dominar as conversas — deixe espaço para o aprendiz.' };
+    if(a>b) return { tag:'Reservado', profile:'alto-a',
+      desc:'Você tende a ser mais introvertido e seletivo nas relações sociais. Prefere ambientes mais calmos e relações com profundidade.',
+      advice:'No mentoring, trabalhe para ajudar seu aprendiz a se abrir e se expressar, criando um ambiente seguro mesmo que isso demande esforço consciente da sua parte.' };
+    return { tag:'Equilibrado', profile:'equilibrado',
+      desc:'Você apresenta equilíbrio entre introversão e extroversão, adaptando-se bem a diferentes contextos sociais.',
+      advice:'No mentoring, use essa flexibilidade para calibrar sua presença conforme a necessidade do aprendiz.' };
+  }
+  if(dim==='D'){
+    if(b>a) return { tag:'Controlador', profile:'alto-b',
+      desc:'Você tende a preferir ter o controle das situações e frequentemente assume papel de liderança.',
+      advice:'No mentoring, cuide para não impor seus pontos de vista. O mentoring eficaz exige compartilhar o controle do relacionamento e abrir mão da necessidade de ter a última palavra.' };
+    if(a>b) return { tag:'Colaborativo', profile:'alto-a',
+      desc:'Você tende a seguir mais do que liderar, sendo confortável em deixar que outros conduzam.',
+      advice:'No mentoring, assuma a liderança do relacionamento com confiança. O aprendiz precisa de um mentor que ofereça direcionamento claro e não hesite em tomar posições.' };
+    return { tag:'Equilibrado', profile:'equilibrado',
+      desc:'Você apresenta equilíbrio entre controle e colaboração, adaptando seu estilo conforme a situação.',
+      advice:'No mentoring, use essa flexibilidade com intenção — às vezes o aprendiz precisará de direcionamento firme, outras vezes de espaço para descobrir por conta própria.' };
+  }
+  if(dim==='R'){
+    if(b>a) return { tag:'Aberto', profile:'alto-b',
+      desc:'Você se sente à vontade sendo vulnerável e expressando sentimentos. Constrói conexões através da abertura emocional.',
+      advice:'No mentoring, sua abertura será um grande ativo para criar confiança. Equilibre-a sendo honesto sem ser invasivo — respeite o ritmo emocional do aprendiz.' };
+    if(a>b) return { tag:'Cauteloso', profile:'alto-a',
+      desc:'Você tende a ser mais reservado em relação aos seus sentimentos e cauteloso ao confiar nos outros.',
+      advice:'No mentoring, trabalhe para superar a cautela inicial. O aprendiz precisa sentir que erros têm consequências toleráveis — e isso começa com a abertura do mentor.' };
+    return { tag:'Equilibrado', profile:'equilibrado',
+      desc:'Você apresenta equilíbrio entre abertura e cautela emocional, adaptando-se conforme o contexto.',
+      advice:'No mentoring, use essa sensibilidade para calibrar o nível de abertura emocional adequado para cada fase do relacionamento.' };
+  }
+}
+
+function showResults(){
+  const missing = QUESTIONS.filter(q=>!answers[q.n]);
+  if(missing.length){ alert(`Ainda há ${missing.length} questão(ões) sem resposta.`); return; }
+
+  document.getElementById('screen-test').classList.remove('active');
+  document.getElementById('screen-results').classList.add('active');
+
+  const dims = calcScores();
+  const now  = new Date().toLocaleDateString('pt-BR');
+
+  // Person info
+  document.getElementById('res-pinfo').innerHTML =
+    `<strong>${userData.nome}</strong><span>${userData.email} · ${userData.whats} · ${now}</span>`;
+
+  // Score summary cards
+  const dimInfo = [
+    { key:'S', label:'Sociabilidade', colorClass:'soc', color:'var(--soc-color)' },
+    { key:'D', label:'Dominância',    colorClass:'dom', color:'var(--dom-color)' },
+    { key:'R', label:'Receptividade', colorClass:'rec', color:'var(--rec-color)' },
+  ];
+  let summaryHtml = '';
+  dimInfo.forEach(d=>{
+    const sc   = dims[d.key];
+    const prof = getProfile(d.key, sc);
+    summaryHtml += `
+      <div class="dim-card ${d.colorClass}">
+        <div class="dim-label">${d.label}</div>
+        <div class="dim-scores">
+          <div class="dim-score-item">
+            <div class="letter">Coluna A</div>
+            <div class="val" style="color:${d.color}">${sc.a}</div>
+          </div>
+          <div class="dim-score-item">
+            <div class="letter">Coluna B</div>
+            <div class="val" style="color:${d.color}">${sc.b}</div>
+          </div>
+        </div>
+        <span class="dim-tag" style="background:${d.color}18;color:${d.color}">${prof.tag}</span>
+      </div>`;
+  });
+  document.getElementById('score-summary').innerHTML = summaryHtml;
+
+  // Interpretation cards
+  const dimTitles = { S:'Sociabilidade', D:'Dominância', R:'Receptividade' };
+  let interpHtml = '';
+  dimInfo.forEach(d=>{
+    const sc   = dims[d.key];
+    const prof = getProfile(d.key, sc);
+    const total = sc.a + sc.b;
+    const bPct = total>0 ? Math.round(sc.b/total*100) : 50;
+
+    interpHtml += `
+      <div class="interp-card">
+        <h3>
+          <span class="dim-badge" style="background:${d.color}15;color:${d.color}">${d.label}</span>
+          ${prof.tag}
+        </h3>
+        <div class="score-line">Coluna A: <strong>${sc.a}</strong> &nbsp;·&nbsp; Coluna B: <strong>${sc.b}</strong> &nbsp;·&nbsp; Total: <strong>${total}</strong></div>
+        <div class="profile-bar-wrap">
+          <div class="profile-bar-label"><span>← Coluna A</span><span>Coluna B →</span></div>
+          <div class="profile-bar-track">
+            <div class="profile-bar-fill" style="width:${bPct}%;background:${d.color}"></div>
+            <div class="profile-bar-marker" style="left:50%;background:${d.color}88"></div>
+          </div>
+        </div>
+        <p>${prof.desc}</p>
+        <p style="background:${d.color}0d;border-left:3px solid ${d.color};padding:10px 14px;border-radius:0 8px 8px 0;font-size:13px;color:#333"><strong>Para o mentoring:</strong> ${prof.advice}</p>
+      </div>`;
+  });
+  document.getElementById('interp-section').innerHTML = interpHtml;
+
+  // Conclusion
+  const sProf = getProfile('S', dims.S);
+  const dProf = getProfile('D', dims.D);
+  const rProf = getProfile('R', dims.R);
+
+  document.getElementById('conclusion-card').innerHTML = `
+    <h3>Perfil para o Mentoring</h3>
+    <p>Seu perfil indica <strong>${sProf.tag}</strong> em Sociabilidade, <strong>${dProf.tag}</strong> em Dominância e <strong>${rProf.tag}</strong> em Receptividade.</p>
+    <p>Lembre-se: a Escala de Mentores lhe dá uma leitura em determinado momento e ela <strong>pode mudar com as circunstâncias</strong>. Tenha em mente que a escala avalia apenas três aspectos de sua personalidade de liderança. Não generalize os resultados além do objetivo deles.</p>
+    <p>Para um relacionamento de mentoring eficaz, busque mais <strong>sociabilidade e receptividade</strong> e menos <strong>dominância</strong>. Use esta escala como ponto de partida — não como definição de quem você é.</p>`;
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ══════════════════════════════════════════════
+//  RESTART
+// ══════════════════════════════════════════════
+function restart(){
+  answers={}; userData={}; currentPage=0;
+  ['inp-nome','inp-whats','inp-email','inp-codigo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('card-dados').style.display='none';
+  document.getElementById('card-codigo').style.opacity='1';
+  document.getElementById('card-codigo').style.pointerEvents='auto';
+  resetCodigoError();
+  document.getElementById('screen-results').classList.remove('active');
+  document.getElementById('screen-access').classList.add('active');
+  window.scrollTo({top:0});
+}
+</script>
+</body>
+</html>
