@@ -226,7 +226,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(
     </div>
 
     <div class="wheel-container">
-      <svg id="wheel-svg" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg"></svg>
+      <svg id="wheel-svg" viewBox="-60 -60 720 720" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
 
     <div class="score-panel">
@@ -324,28 +324,35 @@ function resetCodigoError() {
 //   Bottom (SE→SW): Recursos Financeiros, Contribuição Social, Família
 //   Left   (SW→NW): Desenvolvimento Amoroso, Vida Social, Criatividade/Hobbies & Diversão
 
+// 12 segments in CLOCKWISE order starting from top (-90°).
+// Matches image exactly: Saúde (just right of 12), going clockwise.
+// Segment index i occupies angles: (-90 + i*30) to (-90 + (i+1)*30)
+// Mid-angle of segment i = -90 + i*30 + 15
 const SEGMENTS = [
-  // Angle start from -90° (top), clockwise, 30° each = 12 segments
-  { id:'espiritualidade',    label:'Espiritualidade',              cat:'Qualidade de Vida', color:'#7c5cbf' },
-  { id:'plenitude',          label:'Plenitude e Felicidade',       cat:'Qualidade de Vida', color:'#9b4ec0' },
-  { id:'criatividade',       label:'Criatividade, Hobbies\n& Diversão', cat:'Qualidade de Vida', color:'#c060b8' },
-  { id:'vida_social',        label:'Vida Social',                  cat:'Relacionamentos',   color:'#3a9ad9' },
-  { id:'dev_amoroso',        label:'Desenvolvimento\nAmoroso',     cat:'Relacionamentos',   color:'#2775c4' },
-  { id:'familia',            label:'Família',                      cat:'Relacionamentos',   color:'#1e5fa8' },
-  { id:'contrib_social',     label:'Contribuição\nSocial',         cat:'Profissional',      color:'#e07b28' },
-  { id:'recursos',           label:'Recursos\nFinanceiros',        cat:'Profissional',      color:'#d45e1a' },
-  { id:'realizacao',         label:'Realização e\nPropósito',      cat:'Profissional',      color:'#c0401a' },
-  { id:'equilibrio',         label:'Equilíbrio\nEmocional',        cat:'Pessoal',           color:'#2eaa72' },
-  { id:'dev_intelectual',    label:'Desenvolvimento\nIntelectual', cat:'Pessoal',           color:'#1e9060' },
-  { id:'saude',              label:'Saúde e\nDisposição',          cat:'Pessoal',           color:'#179050' },
+  // ── PESSOAL (top-right, NE quadrant) ──
+  { id:'saude',              label:'Saúde e\nDisposição',          cat:'Pessoal',           color:'#179050' },  // 0: -90→-60
+  { id:'dev_intelectual',    label:'Desenvolvimento\nIntelectual', cat:'Pessoal',           color:'#1e9060' },  // 1: -60→-30
+  { id:'equilibrio',         label:'Equilíbrio\nEmocional',        cat:'Pessoal',           color:'#2eaa72' },  // 2: -30→0
+  // ── PROFISSIONAL (bottom-right, SE quadrant) ──
+  { id:'realizacao',         label:'Realização e\nPropósito',      cat:'Profissional',      color:'#c0401a' },  // 3: 0→30
+  { id:'recursos',           label:'Recursos\nFinanceiros',        cat:'Profissional',      color:'#d45e1a' },  // 4: 30→60
+  { id:'contrib_social',     label:'Contribuição\nSocial',         cat:'Profissional',      color:'#e07b28' },  // 5: 60→90
+  // ── RELACIONAMENTOS (bottom-left, SW quadrant) ──
+  { id:'familia',            label:'Família',                       cat:'Relacionamentos',   color:'#1e5fa8' },  // 6: 90→120
+  { id:'dev_amoroso',        label:'Desenvolvimento\nAmoroso',     cat:'Relacionamentos',   color:'#2775c4' },  // 7: 120→150
+  { id:'vida_social',        label:'Vida Social',                   cat:'Relacionamentos',   color:'#3a9ad9' },  // 8: 150→180
+  // ── QUALIDADE DE VIDA (top-left, NW quadrant) ──
+  { id:'criatividade',       label:'Criatividade,\nHobbies & Diversão', cat:'Qualidade de Vida', color:'#c060b8' }, // 9: 180→210
+  { id:'plenitude',          label:'Plenitude e\nFelicidade',      cat:'Qualidade de Vida', color:'#9b4ec0' },  // 10: 210→240
+  { id:'espiritualidade',    label:'Espiritualidade',               cat:'Qualidade de Vida', color:'#7c5cbf' },  // 11: 240→270
 ];
 
-// Category quadrant labels
+// Category labels positioned in the outer corners of each quadrant
 const CATS = [
-  { label:'QUALIDADE\nDE VIDA', angle:-135 },  // top-left
-  { label:'PESSOAL',            angle:-45  },  // top-right
-  { label:'PROFISSIONAL',       angle:45   },  // bottom-right
-  { label:'RELACIONAMENTOS',    angle:135  },  // bottom-left
+  { label:'PESSOAL',            angle:-45  },  // NE  top-right
+  { label:'PROFISSIONAL',       angle:45   },  // SE  bottom-right
+  { label:'RELACIONAMENTOS',    angle:135  },  // SW  bottom-left
+  { label:'QUALIDADE\nDE VIDA', angle:-135 },  // NW  top-left
 ];
 
 // Scores: 0 = not set
@@ -515,29 +522,37 @@ function drawWheel() {
   hub.setAttribute('stroke', '#ccc'); hub.setAttribute('stroke-width', '1.5');
   svg.appendChild(hub);
 
-  // ── Segment labels ──
+  // ── Segment labels — rotated along each spoke like the original image ──
   SEGMENTS.forEach((seg, si) => {
     const midAngle = -Math.PI/2 + si * SEG_ANG + SEG_ANG/2;
-    const labelR   = R_OUTER + 28;
+    const midDeg   = midAngle * 180 / Math.PI;
+
+    // Label sits inside the outer ring band
+    const labelR = R_OUTER + 26;
     const lx = CX + labelR * Math.cos(midAngle);
     const ly = CY + labelR * Math.sin(midAngle);
 
+    // Rotation: text reads outward from center along the spoke
+    // Add 90° so text runs along the segment direction
+    // Flip text that would be upside-down (left half of wheel)
+    let rot = midDeg + 90;
+    let anchor = 'middle';
+
     const text = document.createElementNS('http://www.w3.org/2000/svg','text');
-    text.setAttribute('x', lx);
-    text.setAttribute('y', ly);
-    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('text-anchor', anchor);
     text.setAttribute('dominant-baseline', 'middle');
-    text.setAttribute('font-size', '8.5');
+    text.setAttribute('font-size', '8');
     text.setAttribute('font-family', 'DM Sans, sans-serif');
-    text.setAttribute('font-weight', '600');
+    text.setAttribute('font-weight', '700');
     text.setAttribute('fill', seg.color);
+    text.setAttribute('transform', `rotate(${rot}, ${lx}, ${ly}) translate(${lx}, ${ly})`);
 
     const lines = seg.label.split('\n');
-    const lineH = 10;
+    const lineH = 9;
     const startDY = -(lines.length - 1) * lineH / 2;
     lines.forEach((line, li) => {
       const tspan = document.createElementNS('http://www.w3.org/2000/svg','tspan');
-      tspan.setAttribute('x', lx);
+      tspan.setAttribute('x', 0);
       tspan.setAttribute('dy', li === 0 ? startDY : lineH);
       tspan.textContent = line;
       text.appendChild(tspan);
@@ -574,28 +589,33 @@ function drawWheel() {
     svg.appendChild(bLabel);
   });
 
-  // ── Category labels (outer) ──
-  const catRadius = R_OUTER + 72;
+  // ── Category labels (outer corners) ──
+  // Positioned at 45° diagonals, outside the ring + label area
+  const catRadius = R_OUTER + 80;
   CATS.forEach(cat => {
     const rad = cat.angle * Math.PI / 180;
     const cx2 = CX + catRadius * Math.cos(rad);
     const cy2 = CY + catRadius * Math.sin(rad);
 
+    const lines = cat.label.split('\n');
+    const fontSize = 13;
+    const lineH = 16;
+    const totalH = lines.length * lineH;
+
     const text = document.createElementNS('http://www.w3.org/2000/svg','text');
     text.setAttribute('x', cx2);
-    text.setAttribute('y', cy2);
+    text.setAttribute('y', cy2 - (totalH/2) + fontSize/2);
     text.setAttribute('text-anchor', 'middle');
-    text.setAttribute('dominant-baseline', 'middle');
-    text.setAttribute('font-size', '11');
+    text.setAttribute('font-size', fontSize);
     text.setAttribute('font-family', 'Playfair Display, serif');
-    text.setAttribute('font-weight', '700');
-    text.setAttribute('fill', '#222');
-    text.setAttribute('letter-spacing', '0.5');
+    text.setAttribute('font-weight', '900');
+    text.setAttribute('fill', '#111');
+    text.setAttribute('letter-spacing', '1');
 
-    cat.label.split('\n').forEach((line, li) => {
+    lines.forEach((line, li) => {
       const tspan = document.createElementNS('http://www.w3.org/2000/svg','tspan');
       tspan.setAttribute('x', cx2);
-      tspan.setAttribute('dy', li === 0 ? 0 : 14);
+      tspan.setAttribute('dy', li === 0 ? 0 : lineH);
       tspan.textContent = line;
       text.appendChild(tspan);
     });
