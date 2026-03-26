@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Código de Acesso — Retorno</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #111118;
+  --paper: #f8f7f3;
+  --card: #ffffff;
+  --accent: #c9472f;
+  --gold: #c9a84c;
+  --muted: #888480;
+  --border: #e4e0d8;
+  --low: #d94f34;
+  --high: #2e9e66;
+  --high-bg: #eef8f3;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.site-header {
+  background: var(--ink); color: #fff;
+  padding: 12px 36px; display: flex; align-items: center; gap: 16px;
+}
+.site-header .badge {
+  height: 72px; display: flex; align-items: center; flex-shrink: 0;
+  background: #fff; border-radius: 10px; padding: 6px 12px;
+}
+.site-header .badge img { height: 62px; width: auto; display: block; }
+.site-header div h1 { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; }
+.site-header div p { font-size: 11px; color: #999; margin-top: 2px; }
+
+.container {
+  max-width: 680px; margin: 0 auto;
+  padding: 48px 20px 80px;
+  flex: 1;
+}
+
+/* HERO */
+.hero {
+  background: var(--ink); border-radius: 18px;
+  padding: 44px 44px; color: #fff; margin-bottom: 28px;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '#'; position: absolute; right: -10px; top: -30px;
+  font-family: 'Playfair Display', serif; font-size: 260px; font-weight: 900;
+  color: rgba(255,255,255,.04); line-height: 1; pointer-events: none;
+}
+.hero h2 { font-family: 'Playfair Display', serif; font-size: 30px; line-height: 1.2; margin-bottom: 10px; }
+.hero h2 span { color: var(--gold); }
+.hero p { font-size: 13.5px; line-height: 1.7; color: #b8b5b0; max-width: 440px; }
+
+/* CARDS */
+.card {
+  background: var(--card); border-radius: 14px; border: 1px solid var(--border);
+  padding: 32px 36px; margin-bottom: 20px;
+}
+.card h3 {
+  font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 10px;
+}
+.card h3 .num {
+  width: 28px; height: 28px; background: var(--accent); color: #fff;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; font-family: 'DM Sans', sans-serif; flex-shrink: 0;
+}
+.card-desc { font-size: 13px; color: var(--muted); margin-bottom: 22px; line-height: 1.6; }
+
+/* FORM */
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.field input, .field select {
+  width: 100%; padding: 11px 14px; border: 1.5px solid var(--border);
+  border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 14px;
+  background: var(--paper); outline: none; transition: border-color .18s, box-shadow .18s;
+}
+.field input:focus, .field select:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,71,47,.1); background: #fff;
+}
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 9px;
+  background: var(--accent); color: #fff; border: none; border-radius: 11px;
+  padding: 13px 28px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: transform .14s, box-shadow .14s; width: 100%; justify-content: center;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(201,71,47,.32); }
+
+/* RESULT */
+.result-box {
+  display: none;
+  background: var(--high-bg); border: 2px solid var(--high);
+  border-radius: 14px; padding: 28px 32px; margin-bottom: 20px;
+  animation: fadeUp .3s ease both;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+.result-box .res-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--high); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+}
+.result-box .res-label svg { flex-shrink: 0; }
+
+.code-display {
+  font-family: 'DM Mono', monospace; font-size: 36px; font-weight: 500;
+  color: var(--ink); letter-spacing: .15em; margin-bottom: 14px;
+  word-break: break-all;
+}
+
+.result-meta {
+  font-size: 12px; color: var(--muted); line-height: 1.8;
+  border-top: 1px dashed rgba(46,158,102,.3); padding-top: 14px; margin-top: 6px;
+}
+.result-meta strong { color: var(--ink); }
+
+.copy-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--high); color: #fff; border: none; border-radius: 9px;
+  padding: 9px 18px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all .14s; margin-top: 14px;
+}
+.copy-btn:hover { opacity: .9; transform: translateY(-1px); }
+.copy-btn.copied { background: #2a8055; }
+
+/* LIST OF RECENT */
+.codes-list { margin-top: 8px; }
+.code-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 0; border-bottom: 1px solid var(--border); gap: 12px;
+}
+.code-row:last-child { border-bottom: none; }
+.code-row .code-val {
+  font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500;
+  letter-spacing: .1em; color: var(--ink);
+}
+.code-row .code-info { font-size: 12px; color: var(--muted); }
+.code-row .code-status {
+  font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 99px;
+}
+.status-active { background: #eef8f3; color: var(--high); }
+.status-expired { background: #f5f5f3; color: #aaa; }
+
+.copy-small {
+  background: transparent; border: 1.5px solid var(--border); border-radius: 7px;
+  padding: 5px 10px; font-size: 12px; font-family: 'DM Sans', sans-serif;
+  cursor: pointer; color: var(--muted); transition: all .13s; display: flex; align-items: center; gap: 5px;
+}
+.copy-small:hover { border-color: var(--ink); color: var(--ink); }
+
+/* DIVIDER */
+.divider { display: flex; align-items: center; gap: 14px; margin: 8px 0 24px; }
+.divider hr { flex: 1; border: none; border-top: 1.5px solid var(--border); }
+.divider span { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 3px 12px; border: 1.5px solid var(--border); border-radius: 99px; background: #fff; white-space: nowrap; }
+
+/* INFO BADGE */
+.info-badge {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: #fffbf0; border: 1.5px solid #f0d888; border-radius: 10px;
+  padding: 12px 16px; font-size: 13px; color: #7a6020; line-height: 1.6;
+  margin-bottom: 20px;
+}
+.info-badge svg { flex-shrink: 0; margin-top: 1px; }
+
+@media (max-width: 580px) {
+  .hero { padding: 28px 22px; }
+  .hero h2 { font-size: 24px; }
+  .card { padding: 24px 20px; }
+  .code-display { font-size: 26px; }
+  .field-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="badge"><img src="data:image/png;base64,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" alt="Retorno"></div>
+  <div>
+    <h1>Gerador de Código de Acesso</h1>
+    <p>Painel Administrativo · Retorno Mentoria</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <h2>Gerar código para <span>liberar o teste</span></h2>
+    <p>Selecione a ferramenta, configure a validade e gere o link completo pronto para enviar ao participante. Não precisa de servidor — a validação é automática.</p>
+  </div>
+
+  <div class="info-badge">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    O código <strong style="font-family:'DM Mono',monospace;letter-spacing:.05em;margin:0 3px">ABC1234</strong> é um código master permanente e sempre válido. Os códigos gerados abaixo têm validade por prazo definido.
+  </div>
+
+  <!-- GENERATOR FORM -->
+  <div class="card">
+    <h3><span class="num">1</span> Configurar Acesso</h3>
+    <p class="card-desc">Selecione a ferramenta e defina os parâmetros. O link gerado já aponta para a ferramenta certa com o código embutido.</p>
+
+    <div class="field">
+      <label>Ferramenta</label>
+      <select id="gen-ferramenta">
+        <option value="indicador-assertividade.html">💬 Indicador de Habilidade de Assertividade</option>
+        <!-- Adicione novas ferramentas aqui conforme forem criadas -->
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Nome do Participante (opcional)</label>
+      <input type="text" id="gen-nome" placeholder="Ex: João Silva">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Validade</label>
+        <select id="gen-validade">
+          <option value="1">1 dia</option>
+          <option value="3">3 dias</option>
+          <option value="7" selected>7 dias</option>
+          <option value="15">15 dias</option>
+          <option value="30">30 dias</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Data de início</label>
+        <input type="date" id="gen-data">
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="gerarCodigo()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Gerar Código e Link
+    </button>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-box" id="result-box">
+    <div class="res-label">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Código e Link Gerados com Sucesso
+    </div>
+
+    <div style="margin-bottom:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--high);">Código de Acesso</div>
+    <div class="code-display" id="res-code">—</div>
+
+    <div style="margin:18px 0 6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--high);">Link Direto para o Participante</div>
+    <div style="background:#fff;border:1.5px solid rgba(46,158,102,.3);border-radius:10px;padding:12px 16px;margin-bottom:4px;">
+      <div id="res-link" style="font-family:'DM Mono',monospace;font-size:12px;color:#444;word-break:break-all;line-height:1.6;">—</div>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:14px;">Ao abrir este link, o código já estará preenchido automaticamente.</p>
+
+    <div class="result-meta" id="res-meta"></div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+      <button class="copy-btn" id="copy-code-btn" onclick="copiarCodigo()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copiar Código
+      </button>
+      <button class="copy-btn" id="copy-link-btn" onclick="copiarLink()" style="background:#2f6ec9;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+        Copiar Link
+      </button>
+    </div>
+  </div>
+
+  <!-- GENERATED CODES LIST -->
+  <div class="card" id="card-historico" style="display:none;">
+    <h3>Códigos Gerados nesta Sessão</h3>
+    <p class="card-desc">Códigos criados desde que esta página foi aberta. Feche e reabra para limpar.</p>
+    <div class="codes-list" id="codes-list"></div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="divider"><hr/><span>Como funciona</span><hr/></div>
+  <div class="card">
+    <h3>Lógica de Validação</h3>
+    <p class="card-desc">Não é necessário servidor ou banco de dados. O código carrega a data de início e validade, mais um checksum criptográfico. O arquivo do teste recalcula e valida na hora.</p>
+    <div style="background:var(--paper);border-radius:10px;padding:16px 20px;font-family:'DM Mono',monospace;font-size:13px;color:#555;line-height:2;border:1px solid var(--border);">
+      <span style="color:var(--accent)">RET</span> · <span style="color:#2f6ec9">DDMMYY</span> · <span style="color:var(--gold)">DIAS</span> · <span style="color:var(--high)">CS</span><br>
+      <span style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted)">
+        prefixo · data de início · validade · checksum
+      </span>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:14px;line-height:1.7;">
+      Exemplo: <strong style="font-family:'DM Mono',monospace">RET-260326-07-EV</strong> = gerado em 26/03/2026, válido por 7 dias, checksum EV.
+    </p>
+  </div>
+
+</div>
+
+<script>
+// ─── SHARED SECRET (must match indicador-assertividade.html) ───
+const SALT = 'RTN9K';
+const MASTER_CODE = 'ABC1234';
+
+// ─── BASE36 ENCODE ──────────────────────────────────────────
+const B36 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function toBase36_2(n) {
+  n = ((n % 1296) + 1296) % 1296;
+  return B36[Math.floor(n / 36)] + B36[n % 36];
+}
+
+// ─── CHECKSUM ───────────────────────────────────────────────
+function computeChecksum(dateStr, days) {
+  const combined = dateStr + String(days).padStart(2,'0') + SALT;
+  let total = 0;
+  for (let i = 0; i < combined.length; i++) {
+    total += (i + 1) * combined.charCodeAt(i);
+  }
+  return toBase36_2(total % 1296);
+}
+
+// ─── BUILD CODE ─────────────────────────────────────────────
+function buildCode(dateStr, days) {
+  const cs = computeChecksum(dateStr, days);
+  const daysStr = String(days).padStart(2,'0');
+  return 'RET-' + dateStr + '-' + daysStr + '-' + cs;
+}
+
+// ─── VALIDATE CODE (same logic used in the test) ────────────
+function validateCode(code) {
+  code = code.trim().toUpperCase();
+  if (code === MASTER_CODE) return { valid: true, reason: 'Código master' };
+
+  // Expected format: RET-DDMMYY-DD-CS
+  const m = code.match(/^RET-(\d{6})-(\d{2})-([A-Z0-9]{2})$/);
+  if (!m) return { valid: false, reason: 'Formato inválido' };
+
+  const dateStr = m[1];
+  const days    = parseInt(m[2], 10);
+  const cs      = m[3];
+
+  // Verify checksum
+  const expectedCs = computeChecksum(dateStr, days);
+  if (cs !== expectedCs) return { valid: false, reason: 'Checksum inválido' };
+
+  // Verify date range
+  const dd = dateStr.slice(0,2), mm = dateStr.slice(2,4), yy = dateStr.slice(4,6);
+  const startDate = new Date(2000 + parseInt(yy), parseInt(mm)-1, parseInt(dd));
+  const endDate   = new Date(startDate);
+  endDate.setDate(endDate.getDate() + days);
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  if (today < startDate) return { valid: false, reason: 'Código ainda não ativo' };
+  if (today > endDate)   return { valid: false, reason: 'Código expirado' };
+
+  return { valid: true, reason: 'Válido', startDate, endDate, days };
+}
+
+// ─── SET DEFAULT DATE ────────────────────────────────────────
+(function() {
+  const today = new Date();
+  const yyyy  = today.getFullYear();
+  const mm    = String(today.getMonth()+1).padStart(2,'0');
+  const dd    = String(today.getDate()).padStart(2,'0');
+  document.getElementById('gen-data').value = yyyy + '-' + mm + '-' + dd;
+})();
+
+// ─── SESSION HISTORY ─────────────────────────────────────────
+const sessionCodes = [];
+
+// ─── GENERATE ────────────────────────────────────────────────
+let currentCode = '';
+let currentLink = '';
+
+function gerarCodigo() {
+  const dataVal    = document.getElementById('gen-data').value;
+  const days       = parseInt(document.getElementById('gen-validade').value);
+  const nome       = document.getElementById('gen-nome').value.trim();
+  const ferramenta = document.getElementById('gen-ferramenta').value;
+
+  if (!dataVal) { alert('Selecione a data de início.'); return; }
+
+  const d       = new Date(dataVal + 'T12:00:00');
+  const dd      = String(d.getDate()).padStart(2,'0');
+  const mm      = String(d.getMonth()+1).padStart(2,'0');
+  const yy      = String(d.getFullYear()).slice(-2);
+  const dateStr = dd + mm + yy;
+
+  const code = buildCode(dateStr, days);
+  currentCode = code;
+
+  // Build direct link with ?code= param — tool reads and auto-validates on load
+  const base = window.location.href.replace(/[^/]*$/, '');
+  currentLink = base + ferramenta + '?code=' + encodeURIComponent(code);
+
+  const endDate  = new Date(d);
+  endDate.setDate(endDate.getDate() + days);
+  const endFmt   = endDate.toLocaleDateString('pt-BR');
+  const startFmt = d.toLocaleDateString('pt-BR');
+
+  // Ferramenta display name
+  const sel = document.getElementById('gen-ferramenta');
+  const ferrNome = sel.options[sel.selectedIndex].text.replace(/^.\s/, '');
+
+  // Show result
+  document.getElementById('res-code').textContent = code;
+  document.getElementById('res-link').textContent  = currentLink;
+  document.getElementById('res-meta').innerHTML =
+    '<strong>Ferramenta:</strong> ' + ferrNome + '<br>' +
+    '<strong>Participante:</strong> ' + (nome || '\u2014') + '<br>' +
+    '<strong>V\u00e1lido de:</strong> ' + startFmt + ' at\u00e9 ' + endFmt + ' (' + days + ' dia(s))<br>' +
+    '<strong>Checksum:</strong> v\u00e1lido \u2713';
+
+  const box = document.getElementById('result-box');
+  box.style.display = 'block';
+  box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  sessionCodes.unshift({ code, link: currentLink, nome, ferrNome, startFmt, endFmt, days, startDate: d, endDate });
+  renderHistory();
+}
+
+// ─── COPY ────────────────────────────────────────────────────
+function copiarCodigo() {
+  navigator.clipboard.writeText(currentCode).then(() => {
+    const btn = document.getElementById('copy-code-btn');
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copiado!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copiar C\u00f3digo';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function copiarLink() {
+  navigator.clipboard.writeText(currentLink).then(() => {
+    const btn = document.getElementById('copy-link-btn');
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Link Copiado!';
+    setTimeout(() => {
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg> Copiar Link';
+    }, 2000);
+  });
+}
+
+function copiarSmall(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.innerHTML;
+    btn.textContent = '\u2713 Copiado';
+    setTimeout(() => { btn.innerHTML = orig; }, 1500);
+  });
+}
+
+// ─── HISTORY ─────────────────────────────────────────────────
+function renderHistory() {
+  if (!sessionCodes.length) return;
+  const card = document.getElementById('card-historico');
+  const list = document.getElementById('codes-list');
+  card.style.display = 'block';
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  list.innerHTML = sessionCodes.map(function(item) {
+    const active = today >= item.startDate && today <= item.endDate;
+    const statusClass = active ? 'status-active' : 'status-expired';
+    const statusLabel = active ? 'Ativo' : 'Expirado';
+    const codeEsc  = item.code.replace(/'/g,"&#39;");
+    const linkEsc  = item.link.replace(/'/g,"&#39;");
+    return '<div class="code-row">' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div class="code-val">' + item.code + '</div>' +
+        '<div class="code-info">' + item.ferrNome + ' \u00b7 ' + (item.nome || 'Sem nome') + ' \u00b7 ' + item.startFmt + ' a ' + item.endFmt + '</div>' +
+        '<div class="code-info" style="margin-top:3px;">' +
+          '<a href="' + item.link + '" target="_blank" style="color:#2f6ec9;font-size:11px;">\uD83D\uDD17 Abrir link</a>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;margin-left:10px;">' +
+        '<span class="code-status ' + statusClass + '">' + statusLabel + '</span>' +
+        '<button class="copy-small" onclick="copiarSmall(\'' + codeEsc + '\', this)">' +
+          '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> C\u00f3digo' +
+        '</button>' +
+        '<button class="copy-small" onclick="copiarSmall(\'' + linkEsc + '\', this)" style="color:#2f6ec9;border-color:#c0d4f0;">' +
+          '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg> Link' +
+        '</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+</script>
+</body>
+</html>
