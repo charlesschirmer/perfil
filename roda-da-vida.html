@@ -698,14 +698,14 @@ function drawWheel() {
     const text = document.createElementNS('http://www.w3.org/2000/svg','text');
     text.setAttribute('text-anchor', anchor);
     text.setAttribute('dominant-baseline', 'middle');
-    text.setAttribute('font-size', '8');
+    text.setAttribute('font-size', '11');
     text.setAttribute('font-family', 'DM Sans, sans-serif');
     text.setAttribute('font-weight', '700');
     text.setAttribute('fill', seg.color);
     text.setAttribute('transform', `rotate(${rot}, ${lx}, ${ly}) translate(${lx}, ${ly})`);
 
     const lines = seg.label.split('\n');
-    const lineH = 9;
+    const lineH = 12;
     const startDY = -(lines.length - 1) * lineH / 2;
     lines.forEach((line, li) => {
       const tspan = document.createElementNS('http://www.w3.org/2000/svg','tspan');
