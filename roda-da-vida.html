@@ -371,7 +371,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(
 
     <!-- WHEEL SVG — large, centered -->
     <div class="wheel-container">
-      <svg id="wheel-svg" viewBox="-60 -60 720 720" xmlns="http://www.w3.org/2000/svg"></svg>
+      <svg id="wheel-svg" viewBox="-90 -90 780 780" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
 
     <!-- HINT -->
@@ -685,7 +685,7 @@ function drawWheel() {
     const midDeg   = midAngle * 180 / Math.PI;
 
     // Label sits inside the outer ring band
-    const labelR = R_OUTER + 26;
+    const labelR = R_OUTER + 36;
     const lx = CX + labelR * Math.cos(midAngle);
     const ly = CY + labelR * Math.sin(midAngle);
 
@@ -748,7 +748,7 @@ function drawWheel() {
 
   // ── Category labels (outer corners) ──
   // Positioned at 45° diagonals, outside the ring + label area
-  const catRadius = R_OUTER + 80;
+  const catRadius = R_OUTER + 118;
   CATS.forEach(cat => {
     const rad = cat.angle * Math.PI / 180;
     const cx2 = CX + catRadius * Math.cos(rad);
