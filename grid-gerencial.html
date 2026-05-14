@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grid Gerencial — Retorno</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #111118; --paper: #f8f7f3; --card: #fff; --muted: #888480; --border: #e4e0d8;
+  --accent: #c9472f; --gold: #c9a84c;
+  --p11-color: #8a8480; --p11-bg: #f5f4f0;
+  --p19-color: #2f6ec9; --p19-bg: #f0f5fd;
+  --p55-color: #d4922a; --p55-bg: #fdf8ee;
+  --p91-color: #c9472f; --p91-bg: #fdf2ef;
+  --p99-color: #2e9e66; --p99-bg: #eef8f3;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
+
+/* HEADER */
+.site-header { background: var(--ink); color: #fff; padding: 10px 28px; display: flex; align-items: center; gap: 16px; }
+.site-header .badge { height: 60px; display: flex; align-items: center; flex-shrink: 0; background: #fff; border-radius: 10px; padding: 5px 10px; }
+.site-header .badge img { height: 50px; width: auto; display: block; }
+.site-header h1 { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; }
+.site-header p { font-size: 11px; color: #999; margin-top: 2px; }
+@media(max-width:600px){ .site-header{padding:8px 14px;gap:10px;} .site-header .badge{height:44px;} .site-header .badge img{height:36px;} .site-header h1{font-size:14px;} .site-header p{display:none;} }
+
+.screen { display: none; }
+.screen.active { display: flex; flex-direction: column; flex: 1; }
+
+/* ══ ACCESS ══ */
+.access-wrap { max-width: 580px; margin: 0 auto; padding: 48px 20px 80px; display: flex; flex-direction: column; gap: 22px; width: 100%; }
+.access-hero { background: var(--ink); border-radius: 18px; padding: 44px; color: #fff; position: relative; overflow: hidden; }
+.access-hero::before { content: '9.9'; position: absolute; right: -10px; bottom: -20px; font-family: 'Playfair Display', serif; font-size: 160px; font-weight: 900; color: rgba(255,255,255,.04); line-height: 1; pointer-events: none; }
+.profile-pills { display: flex; gap: 7px; margin-bottom: 20px; flex-wrap: wrap; }
+.profile-pill { font-size: 10px; font-weight: 800; padding: 4px 12px; border-radius: 99px; letter-spacing: .04em; }
+.access-hero h2 { font-family: 'Playfair Display', serif; font-size: 30px; line-height: 1.15; margin-bottom: 10px; }
+.access-hero h2 span { color: var(--gold); }
+.access-hero p { font-size: 13.5px; line-height: 1.75; color: #c0bdb8; }
+.access-stats { display: flex; gap: 14px; margin-top: 24px; flex-wrap: wrap; }
+.access-stats div { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 12px 16px; text-align: center; }
+.access-stats strong { display: block; font-size: 22px; font-family: 'Playfair Display', serif; color: var(--gold); }
+.access-stats span { font-size: 11px; color: #aaa; }
+
+.form-card { background: var(--card); border-radius: 14px; border: 1px solid var(--border); padding: 28px 32px; }
+.form-card h3 { font-family: 'Playfair Display', serif; font-size: 19px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+.form-card h3 .num { width: 28px; height: 28px; background: var(--accent); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.field { margin-bottom: 13px; }
+.field label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.field input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--paper); outline: none; transition: border-color .18s, box-shadow .18s; }
+.field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,71,47,.1); background: #fff; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+@media(max-width:540px){ .field-row{grid-template-columns:1fr;} .access-hero{padding:28px 22px;} .form-card{padding:22px 18px;} }
+#codigo-error { display:none; margin-top:8px; padding:10px 14px; background:#fdf2ef; border:1.5px solid #d94f34; border-radius:8px; font-size:13px; color:#d94f34; align-items:center; gap:8px; }
+.btn-primary { display: inline-flex; align-items: center; gap: 9px; background: var(--accent); color: #fff; border: none; border-radius: 11px; padding: 13px 28px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform .14s, box-shadow .14s; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(201,71,47,.32); }
+.btn-secondary { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--muted); border: 1.5px solid var(--border); border-radius: 11px; padding: 12px 22px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; }
+.btn-secondary:hover { border-color: var(--ink); color: var(--ink); }
+
+/* ══ PROGRESS ══ */
+.progress-wrap { background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; padding: 11px 28px; display: flex; align-items: center; gap: 16px; }
+.progress-label { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.progress-track { flex: 1; height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--p11-color), var(--p99-color)); border-radius: 99px; transition: width .4s ease; }
+.progress-count { font-size: 13px; font-weight: 700; white-space: nowrap; }
+
+/* ══ TEST ══ */
+.test-wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 80px; width: 100%; }
+
+.instructions-box {
+  background: var(--ink); color: #ccc; border-radius: 12px;
+  padding: 18px 22px; font-size: 13px; line-height: 1.7;
+  margin-bottom: 28px;
+}
+.instructions-box strong { color: var(--gold); }
+
+/* Group card */
+.group-card {
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 24px 26px; margin-bottom: 20px;
+  animation: fadeUp .25s ease both;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+.group-card.complete { border-color: rgba(46,158,102,.4); }
+
+.group-title {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 18px;
+  padding-bottom: 14px; border-bottom: 1.5px solid var(--border);
+}
+.group-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+.group-name { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; }
+.group-status { margin-left: auto; font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.group-status.done { color: var(--p99-color); }
+
+/* Rank instruction */
+.rank-hint { font-size: 12px; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.rank-pips { display: flex; gap: 4px; }
+.pip { width: 20px; height: 20px; border-radius: 4px; background: var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--muted); }
+.pip.active { background: var(--gold); color: var(--ink); }
+
+/* Statement rows */
+.stmt-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 14px; border-radius: 10px;
+  border: 1.5px solid var(--border); background: var(--paper);
+  margin-bottom: 8px; transition: border-color .15s, background .15s;
+  cursor: pointer; user-select: none;
+}
+.stmt-row:last-child { margin-bottom: 0; }
+.stmt-row:hover { border-color: #bbb; background: #fff; }
+.stmt-row.ranked { background: var(--card); }
+
+.stmt-letter {
+  width: 26px; height: 26px; flex-shrink: 0; border-radius: 6px;
+  background: var(--border); color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; margin-top: 1px;
+  transition: background .15s, color .15s;
+}
+.stmt-text { flex: 1; font-size: 14px; line-height: 1.55; padding-top: 2px; }
+
+/* Rank selector inline */
+.rank-select {
+  display: flex; gap: 4px; flex-shrink: 0; align-items: center;
+}
+.rank-btn {
+  width: 32px; height: 32px; border-radius: 7px;
+  border: 1.5px solid var(--border); background: var(--paper);
+  font-size: 13px; font-weight: 700; font-family: 'Playfair Display', serif;
+  cursor: pointer; transition: all .12s; color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.rank-btn:hover { border-color: var(--gold); color: var(--gold); background: #fffbf0; }
+.rank-btn.selected { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+.rank-btn.used { opacity: .3; pointer-events: none; }
+
+/* Conflict warning */
+.conflict-warn {
+  display: none; margin-top: 10px; padding: 9px 13px;
+  background: #fdf2ef; border: 1.5px solid var(--accent);
+  border-radius: 8px; font-size: 12px; color: var(--accent);
+  align-items: center; gap: 8px;
+}
+.conflict-warn.visible { display: flex; }
+
+.nav-btns { display: flex; justify-content: center; align-items: center; margin-top: 32px; gap: 14px; flex-wrap: wrap; }
+@media(max-width:500px){ .btn-primary,.btn-secondary{flex:1;justify-content:center;padding:12px;} }
+
+/* ══ RESULTS ══ */
+.results-wrap { max-width: 820px; margin: 0 auto; padding: 36px 20px 80px; width: 100%; }
+
+.result-hero { background: var(--ink); border-radius: 18px; padding: 36px 40px; color: #fff; margin-bottom: 28px; position: relative; overflow: hidden; }
+.result-hero h2 { font-family: 'Playfair Display', serif; font-size: 26px; margin-bottom: 6px; }
+.result-hero .pinfo strong { color: var(--gold); font-size: 15px; display: block; }
+.result-hero .pinfo span { font-size: 12px; color: #aaa; }
+
+/* Grid visual (2×2 matrix) */
+.grid-matrix-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 28px 32px; margin-bottom: 22px; }
+.grid-matrix-card h3 { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 6px; }
+.grid-matrix-card p { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
+
+.grid-matrix {
+  position: relative; width: 100%; max-width: 420px; margin: 0 auto 20px;
+  aspect-ratio: 1/1;
+}
+.grid-axes {
+  position: absolute; inset: 0;
+}
+.axis-x, .axis-y {
+  position: absolute; background: var(--border);
+}
+.axis-x { left: 0; right: 0; top: 50%; height: 1px; }
+.axis-y { top: 0; bottom: 0; left: 50%; width: 1px; }
+
+.grid-quadrant {
+  position: absolute; width: 50%; height: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; text-align: center; padding: 8px;
+  opacity: .5; transition: opacity .3s;
+}
+.grid-quadrant.active { opacity: 1; }
+.q-11 { top: 50%; left: 0; color: var(--p11-color); }
+.q-19 { top: 0; left: 0; color: var(--p19-color); }
+.q-55 { top: 0; left: 0; width: 100%; height: 100%; align-items: center; justify-content: center; pointer-events: none; }
+.q-91 { top: 50%; left: 50%; color: var(--p91-color); }
+.q-99 { top: 0; left: 50%; color: var(--p99-color); }
+
+.grid-dot {
+  position: absolute; width: 18px; height: 18px;
+  border-radius: 50%; transform: translate(-50%, -50%);
+  border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  transition: all .5s ease; z-index: 10;
+}
+.grid-axis-label {
+  position: absolute; font-size: 10px; font-weight: 700; color: var(--muted);
+  letter-spacing: .07em; text-transform: uppercase;
+}
+.label-x-low { bottom: -22px; left: 0; }
+.label-x-high { bottom: -22px; right: 0; text-align: right; }
+.label-y-low { right: -8px; bottom: 0; writing-mode: vertical-rl; transform: rotate(180deg); }
+.label-y-high { right: -8px; top: 0; writing-mode: vertical-rl; transform: rotate(180deg); }
+
+/* Score table */
+.score-table { width: 100%; border-collapse: collapse; }
+.score-table th { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 8px 12px; text-align: left; border-bottom: 2px solid var(--border); }
+.score-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+.score-table tr:last-child td { font-weight: 700; font-size: 14px; border-bottom: none; border-top: 2px solid var(--border); }
+.score-table .total-label { font-family: 'Playfair Display', serif; }
+.score-badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+.badge-11 { background: var(--p11-bg); color: var(--p11-color); }
+.badge-19 { background: var(--p19-bg); color: var(--p19-color); }
+.badge-55 { background: var(--p55-bg); color: var(--p55-color); }
+.badge-91 { background: var(--p91-bg); color: var(--p91-color); }
+.badge-99 { background: var(--p99-bg); color: var(--p99-color); }
+
+/* Profile result card */
+.profile-result-card {
+  border-radius: 14px; padding: 28px 30px; margin-bottom: 18px;
+  border: 2px solid; position: relative; overflow: hidden;
+}
+.profile-result-card::before { content: attr(data-score); position: absolute; right: 20px; top: -8px; font-family: 'Playfair Display', serif; font-size: 90px; font-weight: 900; opacity: .06; line-height: 1; }
+.profile-result-card h4 { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 6px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.profile-pts { font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 8px; }
+.profile-subtitle { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 14px; }
+.profile-result-card p { font-size: 14px; line-height: 1.75; margin-bottom: 10px; }
+.profile-result-card p:last-child { margin-bottom: 0; }
+.card-99 { background: var(--p99-bg); border-color: var(--p99-color); }
+.card-91 { background: var(--p91-bg); border-color: var(--p91-color); }
+.card-19 { background: var(--p19-bg); border-color: var(--p19-color); }
+.card-55 { background: var(--p55-bg); border-color: var(--p55-color); }
+.card-11 { background: var(--p11-bg); border-color: var(--p11-color); }
+
+.conclusion-card { background: var(--ink); color: #fff; border-radius: 14px; padding: 28px 32px; margin-bottom: 24px; }
+.conclusion-card h3 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--gold); margin-bottom: 14px; }
+.conclusion-card p { font-size: 14px; line-height: 1.75; color: #ccc; margin-bottom: 10px; }
+.conclusion-card p:last-child { margin-bottom: 0; }
+.conclusion-card strong { color: #fff; }
+
+.result-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.result-actions .btn-primary, .result-actions .btn-secondary { flex: 1; justify-content: center; }
+@media(max-width:500px){ .result-actions{flex-direction:column;} }
+
+@media(max-width:600px){
+  .group-card{padding:18px 16px;} .stmt-text{font-size:13px;} .rank-btn{width:28px;height:28px;font-size:12px;}
+  .grid-matrix-card{padding:20px 16px;} .result-hero{padding:24px 20px;} .result-hero h2{font-size:22px;}
+  .profile-result-card{padding:20px 18px;} .conclusion-card{padding:22px 18px;}
+}
+@media print { .site-header,.progress-wrap,.result-actions,.nav-btns,.screen:not(.active),.no-print{display:none!important} .profile-result-card{break-inside:avoid} }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="badge"><img src="data:image/png;base64,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" alt="Retorno"></div>
+  <div>
+    <h1>Grid Gerencial</h1>
+    <p>Ferramenta de Mentoria · Estilo de Gestão</p>
+  </div>
+</header>
+
+<!-- ══ ACCESS ══ -->
+<div id="screen-access" class="screen active">
+  <div class="access-wrap">
+    <div class="access-hero">
+      <div class="profile-pills">
+        <span class="profile-pill" style="background:var(--p11-color);color:#fff">1.1 Empobrecida</span>
+        <span class="profile-pill" style="background:var(--p19-color);color:#fff">1.9 Clube Campestre</span>
+        <span class="profile-pill" style="background:var(--p55-color);color:#fff">5.5 Organizacional</span>
+        <span class="profile-pill" style="background:var(--p91-color);color:#fff">9.1 Autoridade</span>
+        <span class="profile-pill" style="background:var(--p99-color);color:#fff">9.9 Equipe</span>
+      </div>
+      <h2>Grid <span>Gerencial</span></h2>
+      <p>Identifique seu estilo de gestão através do modelo de Blake &amp; Mouton. Classifique 6 grupos de afirmações para descobrir onde você está no grid entre foco em pessoas e foco em resultados.</p>
+      <div class="access-stats">
+        <div><strong>6</strong><span>Grupos</span></div>
+        <div><strong>5</strong><span>Perfis</span></div>
+        <div><strong>~8 min</strong><span>Duração</span></div>
+      </div>
+    </div>
+
+    <div class="form-card" id="card-codigo">
+      <h3><span class="num">1</span> Código de Acesso</h3>
+      <div class="field">
+        <label>Código de acesso</label>
+        <input type="text" id="inp-codigo" placeholder="Digite o código fornecido" autocomplete="off"
+          oninput="resetCodigoError()" onkeydown="if(event.key==='Enter')validateCodigo()"
+          style="text-transform:uppercase;letter-spacing:.1em;font-weight:600;">
+        <div id="codigo-error">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Código inválido. Verifique e tente novamente.</span>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="validateCodigo()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Validar Código
+      </button>
+    </div>
+
+    <div class="form-card" id="card-dados" style="display:none;">
+      <h3><span class="num">2</span> Suas Informações</h3>
+      <div class="field-row">
+        <div class="field"><label>Nome completo</label><input type="text" id="inp-nome" placeholder="Seu nome"></div>
+        <div class="field"><label>WhatsApp</label><input type="tel" id="inp-whats" placeholder="(xx) xxxxx-xxxx"></div>
+      </div>
+      <div class="field"><label>E-mail</label><input type="email" id="inp-email" placeholder="seu@email.com"></div>
+      <div style="margin-top:14px;">
+        <button class="btn-primary" onclick="startTest()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Iniciar Avaliação
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TEST ══ -->
+<div id="screen-test" class="screen">
+  <div class="progress-wrap">
+    <span class="progress-label">Grupos completos</span>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <span class="progress-count" id="progress-count">0 / 6</span>
+  </div>
+  <div class="test-wrap">
+    <div class="instructions-box">
+      Em cada grupo, <strong>classifique as 5 afirmações de 1 a 5</strong> — sendo <strong style="color:#fff">5 a mais parecida</strong> com você e <strong style="color:#fff">1 a menos parecida</strong>. Cada número só pode ser usado uma vez por grupo. <strong>Não pode haver empate.</strong>
+    </div>
+    <div id="groups-container"></div>
+    <div class="nav-btns">
+      <button class="btn-primary" style="background:var(--p99-color)" onclick="showResults()">
+        Ver Resultado
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RESULTS ══ -->
+<div id="screen-results" class="screen">
+  <div class="results-wrap">
+    <div class="result-hero">
+      <h2>Grid Gerencial</h2>
+      <div class="pinfo" id="res-pinfo"></div>
+    </div>
+    <div class="grid-matrix-card">
+      <h3>Posicionamento no Grid</h3>
+      <p>Eixo X = foco em resultados · Eixo Y = foco em pessoas</p>
+      <div style="padding:0 30px 30px;">
+        <div class="grid-matrix" id="grid-matrix">
+          <svg width="100%" height="100%" viewBox="0 0 400 400" style="position:absolute;inset:0">
+            <!-- Grid lines -->
+            <line x1="200" y1="0" x2="200" y2="400" stroke="#e4e0d8" stroke-width="1"/>
+            <line x1="0" y1="200" x2="400" y2="200" stroke="#e4e0d8" stroke-width="1"/>
+            <!-- Faint grid -->
+            <line x1="40" y1="0" x2="40" y2="400" stroke="#f0ede8" stroke-width=".5"/>
+            <line x1="80" y1="0" x2="80" y2="400" stroke="#f0ede8" stroke-width=".5"/>
+            <line x1="120" y1="0" x2="120" y2="400" stroke="#f0ede8" stroke-width=".5"/>
+            <line x1="160" y1="0" x2="160" y2="400" stroke="#f0ede8" stroke-width=".5"/>
+            <line x1="240" y1="0" x2="240" y2="400" stroke="#f0ede8" stroke-width=".5"/>
+            <line x1="280" y1="0" x2="280" y2="400" stroke="#f0ede8" stroke-width=".5"/>
+            <line x1="320" y1="0" x2="320" y2="400" stroke="#f0ede8" stroke-width=".5"/>
+            <line x1="360" y1="0" x2="360" y2="400" stroke="#f0ede8" stroke-width=".5"/>
+            <line x1="0" y1="40"  x2="400" y2="40"  stroke="#f0ede8" stroke-width=".5"/>
+            <line x1="0" y1="80"  x2="400" y2="80"  stroke="#f0ede8" stroke-width=".5"/>
+            <line x1="0" y1="120" x2="400" y2="120" stroke="#f0ede8" stroke-width=".5"/>
+            <line x1="0" y1="160" x2="400" y2="160" stroke="#f0ede8" stroke-width=".5"/>
+            <line x1="0" y1="240" x2="400" y2="240" stroke="#f0ede8" stroke-width=".5"/>
+            <line x1="0" y1="280" x2="400" y2="280" stroke="#f0ede8" stroke-width=".5"/>
+            <line x1="0" y1="320" x2="400" y2="320" stroke="#f0ede8" stroke-width=".5"/>
+            <line x1="0" y1="360" x2="400" y2="360" stroke="#f0ede8" stroke-width=".5"/>
+            <!-- Axis numbers -->
+            <text x="40"  y="415" text-anchor="middle" font-size="11" fill="#aaa">1</text>
+            <text x="80"  y="415" text-anchor="middle" font-size="11" fill="#aaa">2</text>
+            <text x="120" y="415" text-anchor="middle" font-size="11" fill="#aaa">3</text>
+            <text x="160" y="415" text-anchor="middle" font-size="11" fill="#aaa">4</text>
+            <text x="200" y="415" text-anchor="middle" font-size="11" fill="#aaa">5</text>
+            <text x="240" y="415" text-anchor="middle" font-size="11" fill="#aaa">6</text>
+            <text x="280" y="415" text-anchor="middle" font-size="11" fill="#aaa">7</text>
+            <text x="320" y="415" text-anchor="middle" font-size="11" fill="#aaa">8</text>
+            <text x="360" y="415" text-anchor="middle" font-size="11" fill="#aaa">9</text>
+            <text x="-15" y="360" text-anchor="middle" font-size="11" fill="#aaa">1</text>
+            <text x="-15" y="320" text-anchor="middle" font-size="11" fill="#aaa">2</text>
+            <text x="-15" y="280" text-anchor="middle" font-size="11" fill="#aaa">3</text>
+            <text x="-15" y="240" text-anchor="middle" font-size="11" fill="#aaa">4</text>
+            <text x="-15" y="200" text-anchor="middle" font-size="11" fill="#aaa">5</text>
+            <text x="-15" y="160" text-anchor="middle" font-size="11" fill="#aaa">6</text>
+            <text x="-15" y="120" text-anchor="middle" font-size="11" fill="#aaa">7</text>
+            <text x="-15" y="80"  text-anchor="middle" font-size="11" fill="#aaa">8</text>
+            <text x="-15" y="40"  text-anchor="middle" font-size="11" fill="#aaa">9</text>
+            <!-- Profile labels -->
+            <text x="40"  y="370" font-size="10" font-weight="700" fill="#8a8480">1.1</text>
+            <text x="40"  y="30"  font-size="10" font-weight="700" fill="#2f6ec9">1.9</text>
+            <text x="185" y="205" font-size="10" font-weight="700" fill="#d4922a">5.5</text>
+            <text x="340" y="370" font-size="10" font-weight="700" fill="#c9472f">9.1</text>
+            <text x="340" y="30"  font-size="10" font-weight="700" fill="#2e9e66">9.9</text>
+            <!-- Dot -->
+            <circle id="grid-dot" cx="200" cy="200" r="10" fill="#c9a84c" stroke="#fff" stroke-width="3"/>
+          </svg>
+          <!-- Axis labels -->
+          <div style="position:absolute;bottom:-32px;left:0;right:0;display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">
+            <span>← Baixo foco em resultados</span>
+            <span>Alto foco em resultados →</span>
+          </div>
+          <div style="position:absolute;top:0;bottom:0;left:-80px;display:flex;flex-direction:column;justify-content:space-between;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">
+            <span style="writing-mode:vertical-rl;transform:rotate(180deg)">Alto foco em pessoas ↑</span>
+            <span style="writing-mode:vertical-rl;transform:rotate(180deg)">↓ Baixo foco em pessoas</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Score table -->
+      <div style="overflow-x:auto;margin-top:16px;">
+        <table class="score-table" id="score-table">
+          <thead>
+            <tr>
+              <th>Grupo</th>
+              <th style="color:var(--p11-color)">1.1</th>
+              <th style="color:var(--p19-color)">1.9</th>
+              <th style="color:var(--p55-color)">5.5</th>
+              <th style="color:var(--p91-color)">9.1</th>
+              <th style="color:var(--p99-color)">9.9</th>
+            </tr>
+          </thead>
+          <tbody id="score-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="profiles-section"></div>
+    <div class="conclusion-card" id="conclusion-card"></div>
+
+    <div class="result-actions no-print">
+      <button class="btn-secondary" onclick="window.print()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir / Salvar PDF
+      </button>
+      <button class="btn-primary" onclick="restart()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        Nova Avaliação
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  CODE VALIDATION
+// ══════════════════════════════════════════════
+const MASTER_CODE='ABC1234',SALT='RTN9K',B36='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function toBase36_2(n){n=((n%1296)+1296)%1296;return B36[Math.floor(n/36)]+B36[n%36];}
+function computeChecksum(ds,days){const s=ds+String(days).padStart(2,'0')+SALT;let t=0;for(let i=0;i<s.length;i++)t+=(i+1)*s.charCodeAt(i);return toBase36_2(t%1296);}
+function isCodeValid(code){
+  code=code.trim().toUpperCase();
+  if(code===MASTER_CODE)return{ok:true};
+  const m=code.match(/^RET-(\d{6})-(\d{2})-([A-Z0-9]{2})$/);
+  if(!m)return{ok:false,msg:'Formato inválido.'};
+  const ds=m[1],days=parseInt(m[2]),cs=m[3];
+  if(cs!==computeChecksum(ds,days))return{ok:false,msg:'Código inválido.'};
+  const dd=ds.slice(0,2),mm=ds.slice(2,4),yy=ds.slice(4,6);
+  const start=new Date(2000+parseInt(yy),parseInt(mm)-1,parseInt(dd));
+  const end=new Date(start);end.setDate(end.getDate()+days);
+  const today=new Date();today.setHours(0,0,0,0);
+  if(today<start)return{ok:false,msg:'Código ainda não está ativo.'};
+  if(today>end)return{ok:false,msg:'Código expirado.'};
+  return{ok:true};
+}
+function validateCodigo(){
+  const res=isCodeValid(document.getElementById('inp-codigo').value);
+  if(res.ok){
+    document.getElementById('codigo-error').style.display='none';
+    document.getElementById('card-codigo').style.opacity='.55';
+    document.getElementById('card-codigo').style.pointerEvents='none';
+    document.getElementById('card-dados').style.display='block';
+    document.getElementById('inp-nome').focus();
+  } else {
+    const err=document.getElementById('codigo-error');
+    err.querySelector('span').textContent=res.msg||'Código inválido.';
+    err.style.display='flex';
+    document.getElementById('inp-codigo').style.borderColor='#d94f34';
+    document.getElementById('inp-codigo').animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:300,easing:'ease-out'});
+  }
+}
+function resetCodigoError(){document.getElementById('codigo-error').style.display='none';document.getElementById('inp-codigo').style.borderColor='';}
+(function(){const p=new URLSearchParams(window.location.search),c=p.get('code');if(!c)return;document.getElementById('inp-codigo').value=c.toUpperCase();setTimeout(validateCodigo,120);})();
+
+// ══════════════════════════════════════════════
+//  DATA
+//  A=1.1  B=1.9  C=5.5  D=9.1  E=9.9
+// ══════════════════════════════════════════════
+const GROUPS = [
+  {
+    id:'decisao', name:'Decisão', icon:'D',
+    stmts:[
+      {key:'a', profile:'11', text:'Aceito a decisão tomada pelos outros.'},
+      {key:'b', profile:'19', text:'Dou alto valor a manter boas relações.'},
+      {key:'c', profile:'55', text:'Procuro decisões passíveis, embora não perfeitas, da parte dos outros, inclusive eu mesmo.'},
+      {key:'d', profile:'91', text:'Dou grande valor a obter decisões duradouras.'},
+      {key:'e', profile:'99', text:'Dou grande valor a obter decisões criativas que resultem em compreensão e acordo.'},
+    ]
+  },
+  {
+    id:'conviccao', name:'Convicção', icon:'C',
+    stmts:[
+      {key:'a', profile:'11', text:'Ou estou de acordo com as opiniões, atitudes e ideias dos outros, ou evito tomar qualquer partido.'},
+      {key:'b', profile:'19', text:'Prefiro aceitar opiniões, atitudes e ideias dos outros, antes de impor as minhas.'},
+      {key:'c', profile:'55', text:'Quando surgem ideias, opiniões e atitudes diferentes das minhas, assumo uma posição intermediária.'},
+      {key:'d', profile:'91', text:'Defendo minhas ideias, opiniões e atitudes mesmo que com isso, algumas vezes, possa ofender os outros.'},
+      {key:'e', profile:'99', text:'Ouço e procuro ideias, opiniões e atitudes diferentes das minhas. Tenho convicções claras, mas reajo às boas ideias mudando meu modo de pensar.'},
+    ]
+  },
+  {
+    id:'entusiasmo', name:'Entusiasmo', icon:'E',
+    stmts:[
+      {key:'a', profile:'11', text:'Deixo de ver coisas para poder viver.'},
+      {key:'b', profile:'19', text:'Apoio, encorajo e cumprimento os outros pelo que desejam fazer.'},
+      {key:'c', profile:'55', text:'Ofereço sugestões positivas para manter as coisas em frente.'},
+      {key:'d', profile:'91', text:'Sei o que quero e faço pressão para que os outros aceitem.'},
+      {key:'e', profile:'99', text:'Dirijo todas as minhas energias para o que estou fazendo e os outros reagem com entusiasmo.'},
+    ]
+  },
+  {
+    id:'conflito', name:'Conflito', icon:'CF',
+    stmts:[
+      {key:'a', profile:'11', text:'Quando surge conflito, procuro manter-me neutro ou fora dele.'},
+      {key:'b', profile:'19', text:'Procuro evitar gerar conflito, mas quando ele surge, procuro apaziguar os sentimentos e manter as pessoas unidas.'},
+      {key:'c', profile:'55', text:'Quando surge conflito, procuro ser justo mas firme e obter uma solução equitativa.'},
+      {key:'d', profile:'91', text:'Quando surge conflito, tento eliminá-lo ou impor minha posição.'},
+      {key:'e', profile:'99', text:'Quando surge conflito, procuro identificar as razões e dar solução às causas subjacentes.'},
+    ]
+  },
+  {
+    id:'temperamento', name:'Temperamento', icon:'T',
+    stmts:[
+      {key:'a', profile:'11', text:'Ficando neutro me sinto provocado.'},
+      {key:'b', profile:'19', text:'Por causa das tensões que as perturbações podem produzir, reajo de modo cálido e amistoso.'},
+      {key:'c', profile:'55', text:'Sob tensão, sinto-me inseguro quanto ao que devo fazer para evitar futuras pressões.'},
+      {key:'d', profile:'91', text:'Quando as coisas não vão bem, defendo-me, resisto ou volto a carga contra argumentos.'},
+      {key:'e', profile:'99', text:'Quando provocado, contenho-me, embora minha impaciência seja visível.'},
+    ]
+  },
+  {
+    id:'humor', name:'Humor', icon:'H',
+    stmts:[
+      {key:'a', profile:'11', text:'Meu humor é considerado pelos outros como um tanto sem graça.'},
+      {key:'b', profile:'19', text:'Meu humor visa a manter as relações amistosas, ou quando surgem tensões, ele desvia a atenção do lado sério.'},
+      {key:'c', profile:'55', text:'Meu humor tem intenção de ser persuasivo em obter aceitação para mim ou para os meus pontos de vista.'},
+      {key:'d', profile:'91', text:'Meu humor causa impacto.'},
+      {key:'e', profile:'99', text:'Meu humor ajusta-se à situação e lhe dá perspectiva. Mantenho um senso de humor, mesmo sob pressão.'},
+    ]
+  },
+];
+
+const PROFILE_INFO = {
+  '99':{ label:'9.9 — Equipe',              color:'var(--p99-color)', hex:'#2e9e66', cardClass:'card-99', subtitle:'Máximo foco em pessoas e em resultados',
+    desc:'O líder que visualiza o alcance dos resultados através dos esforços do grupo. Estimula as pessoas a participarem e interagirem ao máximo para atingir o objetivo comum.',
+    desc2:'Esforça-se bastante e inspira as pessoas através do entusiasmo. Busca e fornece informações da equipe para encontrar a melhor solução possível. Em conflitos, pesquisa as causas para solucionar através do acordo e do entendimento.' },
+  '91':{ label:'9.1 — Autoridade e Obediência', color:'var(--p91-color)', hex:'#c9472f', cardClass:'card-91', subtitle:'Alto foco em resultados · Baixo foco em pessoas',
+    desc:'O líder que se preocupa bastante com a produção e muito pouco com as pessoas. Utiliza a sua autoridade para atingir os objetivos da empresa. Geralmente é centralizador e controlador.',
+    desc2:'Exige muito de si mesmo e de todos. Para garantir a qualidade, necessita de bastante controle e tenta evitar erros ao máximo. Tem opinião muito forte e em caso de conflito faz com que sua decisão e opinião seja executada.' },
+  '19':{ label:'1.9 — Clube Campestre',       color:'var(--p19-color)', hex:'#2f6ec9', cardClass:'card-19', subtitle:'Alto foco em pessoas · Baixo foco em resultados',
+    desc:'O líder que dedica seus esforços para as pessoas e se preocupa o mínimo com a produção. Faz do clima organizacional um "clube campestre" e procura sempre a harmonia nos relacionamentos.',
+    desc2:'Para evitar conflitos, aceita as atitudes dos outros mesmo que não concorde. Faz de tudo para manter um clima harmônico e fornece feedback sempre que ocorre algo positivo, mas dificilmente fornece feedback negativo.' },
+  '55':{ label:'5.5 — Homem Organizacional',  color:'var(--p55-color)', hex:'#d4922a', cardClass:'card-55', subtitle:'Equilíbrio entre resultados e pessoas',
+    desc:'Predisposição média para a produção e para as pessoas. Procura o equilíbrio entre os resultados e sua predisposição para o trabalho. Mantém um ritmo constante e aceita os fatos pela visão superficial.',
+    desc2:'Fornece suas opiniões mais como informativas do que como exigências. Equilibra as opiniões e procura satisfazer a todos.' },
+  '11':{ label:'1.1 — Empobrecida (Laissez-faire)', color:'var(--p11-color)', hex:'#8a8480', cardClass:'card-11', subtitle:'Mínima preocupação com resultados e pessoas',
+    desc:'Preocupação mínima com a produção e com as pessoas. Caracterizado por uma gestão empobrecida, concentra-se em fazer o mínimo para se manter na organização.',
+    desc2:'Foca no seu trabalho, não se incomoda com os acontecimentos e não se expõe para o grupo. Evita dar opiniões ou fazer críticas.' },
+};
+
+// answers[groupId][stmtKey] = rank (1-5)
+let answers = {};
+let userData = {};
+
+function initAnswers(){
+  answers = {};
+  GROUPS.forEach(g=>{ answers[g.id] = {}; });
+}
+
+// ══════════════════════════════════════════════
+//  START
+// ══════════════════════════════════════════════
+function startTest(){
+  const nome=document.getElementById('inp-nome').value.trim();
+  const whats=document.getElementById('inp-whats').value.trim();
+  const email=document.getElementById('inp-email').value.trim();
+  if(!nome||!whats||!email){alert('Preencha nome, WhatsApp e e-mail.');return;}
+  userData={nome,whats,email};
+  initAnswers();
+  document.getElementById('screen-access').classList.remove('active');
+  document.getElementById('screen-test').classList.add('active');
+  renderGroups();
+  window.scrollTo({top:0});
+}
+
+// ══════════════════════════════════════════════
+//  RENDER GROUPS
+// ══════════════════════════════════════════════
+function renderGroups(){
+  const container = document.getElementById('groups-container');
+  container.innerHTML = GROUPS.map((g,gi) => buildGroupCard(g, gi)).join('');
+  updateProgress();
+}
+
+function buildGroupCard(g, gi){
+  const gAnswers = answers[g.id] || {};
+  const usedRanks = new Set(Object.values(gAnswers));
+  const complete = usedRanks.size === 5;
+
+  let stmtsHtml = g.stmts.map(s => {
+    const rank = gAnswers[s.key];
+    const hasRank = rank !== undefined;
+    let btns = [1,2,3,4,5].map(r => {
+      const isSelected = rank === r;
+      const isUsed = usedRanks.has(r) && !isSelected;
+      return `<button class="rank-btn${isSelected?' selected':''}${isUsed?' used':''}"
+        onclick="setRank('${g.id}','${s.key}',${r})">${r}</button>`;
+    }).join('');
+    return `
+      <div class="stmt-row${hasRank?' ranked':''}" id="stmt-${g.id}-${s.key}">
+        <div class="stmt-letter" style="${hasRank?'background:var(--ink);color:#fff':''}">${s.key.toUpperCase()}</div>
+        <div class="stmt-text">${s.text}</div>
+        <div class="rank-select">${btns}</div>
+      </div>`;
+  }).join('');
+
+  // Check for duplicate ranks warning
+  const vals = Object.values(gAnswers);
+  const hasDuplicate = vals.length !== new Set(vals).size;
+
+  return `
+    <div class="group-card${complete?' complete':''}" id="group-${g.id}">
+      <div class="group-title">
+        <div class="group-icon">${g.icon}</div>
+        <div class="group-name">${g.name}</div>
+        <div class="group-status${complete?' done':''}">${complete?'✓ Completo':Object.keys(gAnswers).length+'/5'}</div>
+      </div>
+      <div class="rank-hint">
+        <span>Classifique de 1 (menos parecido) a 5 (mais parecido):</span>
+      </div>
+      ${stmtsHtml}
+      <div class="conflict-warn${hasDuplicate?' visible':''}" id="warn-${g.id}">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Atenção: cada número só pode ser usado uma vez neste grupo.
+      </div>
+    </div>`;
+}
+
+function setRank(groupId, stmtKey, rank){
+  if(!answers[groupId]) answers[groupId] = {};
+
+  // If this rank is already used by another stmt in this group, clear it
+  const gAnswers = answers[groupId];
+  Object.keys(gAnswers).forEach(k => {
+    if(k !== stmtKey && gAnswers[k] === rank) delete gAnswers[k];
+  });
+
+  answers[groupId][stmtKey] = rank;
+
+  // Re-render just this group card
+  const g = GROUPS.find(g => g.id === groupId);
+  const gi = GROUPS.indexOf(g);
+  const card = document.getElementById('group-' + groupId);
+  if(card){
+    const tmp = document.createElement('div');
+    tmp.innerHTML = buildGroupCard(g, gi);
+    card.replaceWith(tmp.firstElementChild);
+  }
+  updateProgress();
+}
+
+function updateProgress(){
+  const complete = GROUPS.filter(g => {
+    const vals = Object.values(answers[g.id]||{});
+    return vals.length === 5 && new Set(vals).size === 5;
+  }).length;
+  document.getElementById('progress-fill').style.width = (complete/6*100)+'%';
+  document.getElementById('progress-count').textContent = complete+' / 6';
+}
+
+// ══════════════════════════════════════════════
+//  RESULTS
+// ══════════════════════════════════════════════
+function calcScores(){
+  const scores = {'11':0,'19':0,'55':0,'91':0,'99':0};
+  GROUPS.forEach(g => {
+    const gA = answers[g.id] || {};
+    g.stmts.forEach(s => {
+      const rank = gA[s.key];
+      if(rank) scores[s.profile] += rank;
+    });
+  });
+  return scores;
+}
+
+function showResults(){
+  // Validate all complete
+  const incomplete = GROUPS.filter(g => {
+    const vals = Object.values(answers[g.id]||{});
+    return vals.length !== 5 || new Set(vals).size !== 5;
+  });
+  if(incomplete.length){
+    alert(`Ainda há ${incomplete.length} grupo(s) incompleto(s) ou com empate.\nGrupos: ${incomplete.map(g=>g.name).join(', ')}`);
+    return;
+  }
+
+  document.getElementById('screen-test').classList.remove('active');
+  document.getElementById('screen-results').classList.add('active');
+
+  const scores = calcScores();
+  const now = new Date().toLocaleDateString('pt-BR');
+
+  document.getElementById('res-pinfo').innerHTML =
+    `<strong>${userData.nome}</strong><span>${userData.email} · ${userData.whats} · ${now}</span>`;
+
+  // Sort by score
+  const sorted = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  const dominant = sorted[0][0];
+  const dominantInfo = PROFILE_INFO[dominant];
+
+  // ── Grid dot position ──
+  // Map profile to (x,y) in 1-9 scale
+  const profileCoords = {'11':[1,1],'19':[1,9],'55':[5,5],'91':[9,1],'99':[9,9]};
+  // Weighted average position
+  const totalScore = Object.values(scores).reduce((a,b)=>a+b,0);
+  let wx=0, wy=0;
+  Object.entries(scores).forEach(([p,s])=>{
+    const [px,py]=profileCoords[p];
+    wx += px*(s/totalScore);
+    wy += py*(s/totalScore);
+  });
+  // Convert 1-9 to SVG coords (40 to 360 per axis, step = 40)
+  const svgX = (wx-1)/8 * 320 + 40;
+  const svgY = 400 - ((wy-1)/8 * 320 + 40);
+  const dot = document.getElementById('grid-dot');
+  if(dot){ dot.setAttribute('cx', svgX); dot.setAttribute('cy', svgY); dot.setAttribute('fill', dominantInfo.hex); }
+
+  // ── Score table ──
+  let tbodyHtml = '';
+  GROUPS.forEach(g=>{
+    const gA = answers[g.id]||{};
+    const cols = ['11','19','55','91','99'];
+    const profileToKey = {'11':'a','19':'b','55':'c','91':'d','99':'e'};
+    tbodyHtml += `<tr>
+      <td><strong>${g.name}</strong></td>
+      ${cols.map(p=>{
+        const key=profileToKey[p];
+        const v=gA[key]||'-';
+        return `<td style="text-align:center"><span class="score-badge badge-${p}">${v}</span></td>`;
+      }).join('')}
+    </tr>`;
+  });
+  // Totals row
+  const cols = ['11','19','55','91','99'];
+  tbodyHtml += `<tr>
+    <td class="total-label">TOTAL</td>
+    ${cols.map(p=>`<td style="text-align:center;font-size:16px;font-family:'Playfair Display',serif;color:${PROFILE_INFO[p].hex}">${scores[p]}</td>`).join('')}
+  </tr>`;
+  document.getElementById('score-tbody').innerHTML = tbodyHtml;
+
+  // ── Profile cards ──
+  let profHtml = '';
+  sorted.forEach(([key,val],idx)=>{
+    if(idx>0 && val < sorted[0][1]*0.55) return;
+    const p = PROFILE_INFO[key];
+    profHtml += `
+      <div class="profile-result-card ${p.cardClass}" data-score="${p.label}">
+        <h4>
+          <span style="font-size:26px;font-weight:900;color:${p.hex}">${key.replace('99','9.9').replace('91','9.1').replace('55','5.5').replace('19','1.9').replace('11','1.1')}</span>
+          ${p.label.split('—')[1]?.trim()}
+          <span class="profile-pts" style="background:${p.hex}20;color:${p.hex}">${val} pts${idx===0?' · Predominante':''}</span>
+        </h4>
+        <div class="profile-subtitle" style="color:${p.hex}">${p.subtitle}</div>
+        <p>${p.desc}</p>
+        <p>${p.desc2}</p>
+      </div>`;
+  });
+  document.getElementById('profiles-section').innerHTML =
+    `<h3 style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:16px;">Análise do seu Perfil</h3>${profHtml}`;
+
+  // ── Conclusion ──
+  document.getElementById('conclusion-card').innerHTML = `
+    <h3>Seu Perfil Gerencial</h3>
+    <p>Seu estilo predominante é <strong>${dominantInfo.label}</strong>, com ${scores[dominant]} pontos. ${sorted[1][1] >= sorted[0][1]*0.7 ? `Você também apresenta características significativas de <strong>${PROFILE_INFO[sorted[1][0]].label}</strong>, criando um perfil híbrido.` : ''}</p>
+    <p>O Grid Gerencial, desenvolvido por Blake &amp; Mouton, não define um perfil como melhor ou pior — cada estilo tem forças e limitações. O objetivo é o <strong>autoconhecimento</strong> para que você possa ampliar sua flexibilidade de gestão e desenvolver o perfil mais adequado a cada situação.</p>
+    <p>Para um relacionamento de mentoring eficaz, leve em conta como seu estilo gerencial influencia a forma como você conduz, escuta e apoia as pessoas ao seu redor.</p>`;
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ══════════════════════════════════════════════
+//  RESTART
+// ══════════════════════════════════════════════
+function restart(){
+  userData={}; initAnswers();
+  ['inp-nome','inp-whats','inp-email','inp-codigo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('card-dados').style.display='none';
+  document.getElementById('card-codigo').style.opacity='1';
+  document.getElementById('card-codigo').style.pointerEvents='auto';
+  resetCodigoError();
+  document.getElementById('screen-results').classList.remove('active');
+  document.getElementById('screen-access').classList.add('active');
+  window.scrollTo({top:0});
+}
+</script>
+</body>
+</html>

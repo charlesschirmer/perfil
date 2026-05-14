@@ -182,7 +182,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(
     <h2>Ferramentas de <span>Desenvolvimento</span></h2>
     <p>Avaliações e instrumentos de autoconhecimento para acelerar o desenvolvimento profissional. Cada ferramenta gera um resultado personalizado com perfil gráfico.</p>
     <div class="hero-stats">
-      <div class="hero-stat"><strong id="stat-tools">3</strong><span>Ferramentas ativas</span></div>
+      <div class="hero-stat"><strong id="stat-tools">5</strong><span>Ferramentas ativas</span></div>
       <div class="hero-stat"><strong>Em breve</strong><span>Novas ferramentas</span></div>
       <div class="hero-stat"><strong>100%</strong><span>Online · Sem instalação</span></div>
     </div>
@@ -245,6 +245,26 @@ const TOOLS = [
     icon: '🎯',
     iconBg: '#fff8ee',
     tags: ['Autoavaliação', '~8 min', '3 dimensões'],
+    active: true,
+  },
+  {
+    id: 'disc',
+    name: 'DISC — Perfil Comportamental',
+    desc: 'Identifique seu perfil predominante entre Dominância, Influência, Segurança e Conformidade. 30 questões objetivas com análise detalhada do seu estilo comportamental.',
+    file: 'disc.html',
+    icon: '🧭',
+    iconBg: '#fdf2ef',
+    tags: ['Autoconhecimento', '~5 min', '4 perfis'],
+    active: true,
+  },
+  {
+    id: 'grid-gerencial',
+    name: 'Grid Gerencial',
+    desc: 'Baseado no modelo de Blake & Mouton, identifica seu estilo de gestão entre os 5 perfis do grid: Equipe (9.9), Autoridade (9.1), Clube Campestre (1.9), Organizacional (5.5) e Empobrecido (1.1).',
+    file: 'grid-gerencial.html',
+    icon: '⊞',
+    iconBg: '#eef8f3',
+    tags: ['Estilo de Gestão', '~8 min', '5 perfis'],
     active: true,
   },
 ];

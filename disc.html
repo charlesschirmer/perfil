@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DISC — Autoconhecimento · Retorno</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #111118; --paper: #f8f7f3; --card: #fff; --muted: #888480; --border: #e4e0d8;
+  --accent: #c9472f; --gold: #c9a84c;
+  --d-color: #c9472f; --d-bg: #fdf2ef; --d-light: #fff0ed;
+  --i-color: #d4922a; --i-bg: #fdf8ee; --i-light: #fffbf0;
+  --s-color: #2e9e66; --s-bg: #eef8f3; --s-light: #f0fdf6;
+  --c-color: #2f6ec9; --c-bg: #f0f5fd; --c-light: #f5f8ff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
+
+/* HEADER */
+.site-header { background: var(--ink); color: #fff; padding: 10px 28px; display: flex; align-items: center; gap: 16px; }
+.site-header .badge { height: 60px; display: flex; align-items: center; flex-shrink: 0; background: #fff; border-radius: 10px; padding: 5px 10px; }
+.site-header .badge img { height: 50px; width: auto; display: block; }
+.site-header h1 { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; }
+.site-header p { font-size: 11px; color: #999; margin-top: 2px; }
+@media(max-width:600px){ .site-header{padding:8px 14px;gap:10px;} .site-header .badge{height:44px;} .site-header .badge img{height:36px;} .site-header h1{font-size:14px;} .site-header p{display:none;} }
+
+.screen { display: none; }
+.screen.active { display: flex; flex-direction: column; flex: 1; }
+
+/* ══ ACCESS ══ */
+.access-wrap { max-width: 580px; margin: 0 auto; padding: 48px 20px 80px; display: flex; flex-direction: column; gap: 22px; width: 100%; }
+.access-hero { background: var(--ink); border-radius: 18px; padding: 44px; color: #fff; position: relative; overflow: hidden; }
+.access-hero::before { content: 'DISC'; position: absolute; right: -20px; bottom: -30px; font-family: 'Playfair Display', serif; font-size: 120px; font-weight: 900; color: rgba(255,255,255,.05); line-height: 1; pointer-events: none; }
+.disc-pills { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.disc-pill { font-size: 11px; font-weight: 800; padding: 5px 14px; border-radius: 99px; letter-spacing: .06em; }
+.pill-d { background: var(--d-color); color: #fff; }
+.pill-i { background: var(--i-color); color: #fff; }
+.pill-s { background: var(--s-color); color: #fff; }
+.pill-c { background: var(--c-color); color: #fff; }
+.access-hero h2 { font-family: 'Playfair Display', serif; font-size: 32px; line-height: 1.15; margin-bottom: 10px; }
+.access-hero h2 span { color: var(--gold); }
+.access-hero p { font-size: 13.5px; line-height: 1.75; color: #c0bdb8; }
+.access-stats { display: flex; gap: 14px; margin-top: 24px; flex-wrap: wrap; }
+.access-stats div { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 12px 16px; text-align: center; }
+.access-stats strong { display: block; font-size: 22px; font-family: 'Playfair Display', serif; color: var(--gold); }
+.access-stats span { font-size: 11px; color: #aaa; }
+
+.form-card { background: var(--card); border-radius: 14px; border: 1px solid var(--border); padding: 28px 32px; }
+.form-card h3 { font-family: 'Playfair Display', serif; font-size: 19px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+.form-card h3 .num { width: 28px; height: 28px; background: var(--accent); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.field { margin-bottom: 13px; }
+.field label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.field input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--paper); outline: none; transition: border-color .18s, box-shadow .18s; }
+.field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,71,47,.1); background: #fff; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+@media(max-width:540px){ .field-row{grid-template-columns:1fr;} .access-hero{padding:28px 22px;} .form-card{padding:22px 18px;} }
+#codigo-error { display:none; margin-top:8px; padding:10px 14px; background:#fdf2ef; border:1.5px solid #d94f34; border-radius:8px; font-size:13px; color:#d94f34; align-items:center; gap:8px; }
+.btn-primary { display: inline-flex; align-items: center; gap: 9px; background: var(--accent); color: #fff; border: none; border-radius: 11px; padding: 13px 28px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform .14s, box-shadow .14s; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(201,71,47,.32); }
+.btn-secondary { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--muted); border: 1.5px solid var(--border); border-radius: 11px; padding: 12px 22px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; }
+.btn-secondary:hover { border-color: var(--ink); color: var(--ink); }
+
+/* ══ PROGRESS ══ */
+.progress-wrap { background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; padding: 11px 28px; display: flex; align-items: center; gap: 16px; }
+.progress-label { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.progress-track { flex: 1; height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--d-color), var(--i-color), var(--s-color), var(--c-color)); border-radius: 99px; transition: width .4s ease; }
+.progress-count { font-size: 13px; font-weight: 700; white-space: nowrap; }
+
+/* ══ TEST SCREEN ══ */
+.test-wrap { max-width: 680px; margin: 0 auto; padding: 28px 20px 80px; width: 100%; }
+
+.group-header {
+  display: flex; align-items: center; gap: 12px;
+  margin: 32px 0 18px;
+}
+.group-header:first-child { margin-top: 0; }
+.group-header hr { flex: 1; border: none; border-top: 1.5px solid var(--border); }
+.group-tag { font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 4px 14px; border: 1.5px solid var(--border); border-radius: 99px; background: #fff; white-space: nowrap; }
+
+/* Question card */
+.q-card {
+  background: var(--card); border: 1.5px solid var(--border); border-radius: 13px;
+  padding: 20px 22px; margin-bottom: 10px;
+  animation: fadeUp .22s ease both;
+  transition: border-color .15s;
+}
+.q-card.answered { border-color: rgba(17,17,24,.2); }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.q-num { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 8px; }
+.q-text { font-size: 14px; font-weight: 600; line-height: 1.5; margin-bottom: 14px; color: var(--ink); }
+
+/* 4 option buttons in 2×2 grid */
+.q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media(max-width:420px){ .q-options{grid-template-columns:1fr;} }
+
+.opt-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 13px; border: 1.5px solid var(--border); border-radius: 9px;
+  background: var(--paper); cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  color: var(--ink); text-align: left; transition: all .12s;
+}
+.opt-btn:hover { border-color: #aaa; background: #fff; transform: translateY(-1px); }
+.opt-letter { width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; background: var(--border); color: var(--muted); transition: background .12s, color .12s; }
+
+/* Selected states per profile */
+.opt-btn.sel-d { border-color: var(--d-color); background: var(--d-light); color: var(--d-color); font-weight: 600; }
+.opt-btn.sel-d .opt-letter { background: var(--d-color); color: #fff; }
+.opt-btn.sel-i { border-color: var(--i-color); background: var(--i-light); color: var(--i-color); font-weight: 600; }
+.opt-btn.sel-i .opt-letter { background: var(--i-color); color: #fff; }
+.opt-btn.sel-s { border-color: var(--s-color); background: var(--s-light); color: var(--s-color); font-weight: 600; }
+.opt-btn.sel-s .opt-letter { background: var(--s-color); color: #fff; }
+.opt-btn.sel-c { border-color: var(--c-color); background: var(--c-light); color: var(--c-color); font-weight: 600; }
+.opt-btn.sel-c .opt-letter { background: var(--c-color); color: #fff; }
+
+.nav-btns { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; gap: 12px; }
+@media(max-width:480px){ .btn-primary,.btn-secondary{flex:1;justify-content:center;padding:12px;} }
+
+/* ══ RESULTS ══ */
+.results-wrap { max-width: 800px; margin: 0 auto; padding: 36px 20px 80px; width: 100%; }
+
+.result-hero { background: var(--ink); border-radius: 18px; padding: 36px 40px; color: #fff; margin-bottom: 28px; position: relative; overflow: hidden; }
+.result-hero h2 { font-family: 'Playfair Display', serif; font-size: 26px; margin-bottom: 6px; }
+.result-hero .pinfo strong { color: var(--gold); font-size: 15px; display: block; }
+.result-hero .pinfo span { font-size: 12px; color: #aaa; }
+
+/* Score bar chart */
+.score-chart { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 28px 32px; margin-bottom: 22px; }
+.score-chart h3 { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 4px; }
+.score-chart p { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
+.chart-bars { display: flex; flex-direction: column; gap: 14px; }
+.chart-row { display: flex; align-items: center; gap: 14px; }
+.chart-label { width: 130px; flex-shrink: 0; }
+.chart-label .letter { font-size: 18px; font-weight: 900; font-family: 'Playfair Display', serif; }
+.chart-label .name { font-size: 11px; font-weight: 600; color: var(--muted); }
+.chart-track { flex: 1; height: 36px; background: var(--paper); border-radius: 10px; overflow: hidden; position: relative; border: 1px solid var(--border); }
+.chart-bar { height: 100%; border-radius: 10px; display: flex; align-items: center; padding-left: 12px; transition: width .8s cubic-bezier(.4,0,.2,1); min-width: 36px; }
+.chart-bar-val { font-size: 14px; font-weight: 800; color: #fff; font-family: 'Playfair Display', serif; }
+.chart-pct { font-size: 13px; font-weight: 700; width: 44px; text-align: right; flex-shrink: 0; }
+.dominant-tag { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; margin-left: 6px; }
+
+/* Profile cards */
+.profiles-section { margin-bottom: 22px; }
+.profiles-section h3 { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 16px; }
+
+.profile-card {
+  border-radius: 14px; padding: 26px 28px; margin-bottom: 16px;
+  border: 2px solid; position: relative; overflow: hidden;
+}
+.profile-card::before { content: attr(data-letter); position: absolute; right: 16px; top: -10px; font-family: 'Playfair Display', serif; font-size: 100px; font-weight: 900; opacity: .06; line-height: 1; }
+.profile-card h4 { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+.profile-card .score-badge { font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 8px; }
+.profile-card .subtitle { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 14px; }
+.profile-card p { font-size: 14px; line-height: 1.75; margin-bottom: 10px; }
+.profile-card p:last-child { margin-bottom: 0; }
+.profile-card.dominant-card { opacity: 1; }
+.profile-card.secondary-card { opacity: .82; }
+
+.profile-card.card-d { background: var(--d-bg); border-color: var(--d-color); }
+.profile-card.card-i { background: var(--i-bg); border-color: var(--i-color); }
+.profile-card.card-s { background: var(--s-bg); border-color: var(--s-color); }
+.profile-card.card-c { background: var(--c-bg); border-color: var(--c-color); }
+
+/* Attention points */
+.attention-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 24px 28px; margin-bottom: 22px; }
+.attention-card h3 { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.attention-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media(max-width:560px){ .attention-grid{grid-template-columns:1fr;} }
+.attention-item { padding: 12px 14px; border-radius: 9px; border: 1.5px solid; display: flex; align-items: flex-start; gap: 10px; }
+.attention-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.attention-text { font-size: 13px; line-height: 1.5; }
+
+/* Summary conclusion */
+.conclusion-card { background: var(--ink); color: #fff; border-radius: 14px; padding: 28px 32px; margin-bottom: 24px; }
+.conclusion-card h3 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--gold); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.conclusion-card p { font-size: 14px; line-height: 1.75; color: #ccc; margin-bottom: 10px; }
+.conclusion-card p:last-child { margin-bottom: 0; }
+.conclusion-card strong { color: #fff; }
+
+.result-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.result-actions .btn-primary, .result-actions .btn-secondary { flex: 1; justify-content: center; }
+@media(max-width:500px){ .result-actions{flex-direction:column;} }
+
+@media print {
+  .site-header,.progress-wrap,.result-actions,.screen:not(.active),.no-print{display:none!important}
+  .profile-card{break-inside:avoid}
+}
+@media(max-width:600px){
+  .result-hero{padding:24px 20px;} .result-hero h2{font-size:22px;}
+  .score-chart{padding:20px 16px;} .chart-label{width:100px;}
+  .profile-card{padding:20px 18px;} .attention-card{padding:18px 16px;}
+  .conclusion-card{padding:22px 18px;}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="badge"><img src="data:image/png;base64,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" alt="Retorno"></div>
+  <div>
+    <h1>DISC — Autoconhecimento</h1>
+    <p>Ferramenta de Mentoria · Perfil Comportamental</p>
+  </div>
+</header>
+
+<!-- ══ ACCESS ══ -->
+<div id="screen-access" class="screen active">
+  <div class="access-wrap">
+    <div class="access-hero">
+      <div class="disc-pills">
+        <span class="disc-pill pill-d">D Dominância</span>
+        <span class="disc-pill pill-i">I Influência</span>
+        <span class="disc-pill pill-s">S Segurança</span>
+        <span class="disc-pill pill-c">C Conformidade</span>
+      </div>
+      <h2>Perfil <span>DISC</span></h2>
+      <p>Descubra seu perfil comportamental através de 30 questões objetivas. Identifique suas características predominantes e compreenda como você age, decide e se relaciona.</p>
+      <div class="access-stats">
+        <div><strong>30</strong><span>Questões</span></div>
+        <div><strong>4</strong><span>Perfis</span></div>
+        <div><strong>~5 min</strong><span>Duração</span></div>
+      </div>
+    </div>
+
+    <div class="form-card" id="card-codigo">
+      <h3><span class="num">1</span> Código de Acesso</h3>
+      <div class="field">
+        <label>Código de acesso</label>
+        <input type="text" id="inp-codigo" placeholder="Digite o código fornecido" autocomplete="off"
+          oninput="resetCodigoError()" onkeydown="if(event.key==='Enter')validateCodigo()"
+          style="text-transform:uppercase;letter-spacing:.1em;font-weight:600;">
+        <div id="codigo-error">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Código inválido. Verifique e tente novamente.</span>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="validateCodigo()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Validar Código
+      </button>
+    </div>
+
+    <div class="form-card" id="card-dados" style="display:none;">
+      <h3><span class="num">2</span> Suas Informações</h3>
+      <div class="field-row">
+        <div class="field"><label>Nome completo</label><input type="text" id="inp-nome" placeholder="Seu nome"></div>
+        <div class="field"><label>WhatsApp</label><input type="tel" id="inp-whats" placeholder="(xx) xxxxx-xxxx"></div>
+      </div>
+      <div class="field"><label>E-mail</label><input type="email" id="inp-email" placeholder="seu@email.com"></div>
+      <div style="margin-top:14px;">
+        <button class="btn-primary" onclick="startTest()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Iniciar Avaliação
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TEST ══ -->
+<div id="screen-test" class="screen">
+  <div class="progress-wrap">
+    <span class="progress-label">Progresso</span>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <span class="progress-count" id="progress-count">0 / 30</span>
+  </div>
+  <div class="test-wrap" id="test-wrap"></div>
+</div>
+
+<!-- ══ RESULTS ══ -->
+<div id="screen-results" class="screen">
+  <div class="results-wrap">
+    <div class="result-hero">
+      <h2>Perfil DISC</h2>
+      <div class="pinfo" id="res-pinfo"></div>
+    </div>
+    <div class="score-chart">
+      <h3>Resultado — Pontuação por Perfil</h3>
+      <p>Total de cada perfil nas 30 questões</p>
+      <div class="chart-bars" id="chart-bars"></div>
+    </div>
+    <div class="profiles-section">
+      <h3>Análise do seu Perfil</h3>
+      <div id="profiles-content"></div>
+    </div>
+    <div class="attention-card">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Pontos de Atenção do seu Perfil
+      </h3>
+      <div class="attention-grid" id="attention-grid"></div>
+    </div>
+    <div class="conclusion-card" id="conclusion-card"></div>
+    <div class="result-actions no-print">
+      <button class="btn-secondary" onclick="window.print()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir / Salvar PDF
+      </button>
+      <button class="btn-primary" onclick="restart()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        Nova Avaliação
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  CODE VALIDATION
+// ══════════════════════════════════════════════
+const MASTER_CODE='ABC1234',SALT='RTN9K',B36='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function toBase36_2(n){n=((n%1296)+1296)%1296;return B36[Math.floor(n/36)]+B36[n%36];}
+function computeChecksum(ds,days){const s=ds+String(days).padStart(2,'0')+SALT;let t=0;for(let i=0;i<s.length;i++)t+=(i+1)*s.charCodeAt(i);return toBase36_2(t%1296);}
+function isCodeValid(code){
+  code=code.trim().toUpperCase();
+  if(code===MASTER_CODE)return{ok:true};
+  const m=code.match(/^RET-(\d{6})-(\d{2})-([A-Z0-9]{2})$/);
+  if(!m)return{ok:false,msg:'Formato inválido.'};
+  const ds=m[1],days=parseInt(m[2]),cs=m[3];
+  if(cs!==computeChecksum(ds,days))return{ok:false,msg:'Código inválido.'};
+  const dd=ds.slice(0,2),mm=ds.slice(2,4),yy=ds.slice(4,6);
+  const start=new Date(2000+parseInt(yy),parseInt(mm)-1,parseInt(dd));
+  const end=new Date(start);end.setDate(end.getDate()+days);
+  const today=new Date();today.setHours(0,0,0,0);
+  if(today<start)return{ok:false,msg:'Código ainda não está ativo.'};
+  if(today>end)return{ok:false,msg:'Código expirado.'};
+  return{ok:true};
+}
+function validateCodigo(){
+  const res=isCodeValid(document.getElementById('inp-codigo').value);
+  if(res.ok){
+    document.getElementById('codigo-error').style.display='none';
+    document.getElementById('card-codigo').style.opacity='.55';
+    document.getElementById('card-codigo').style.pointerEvents='none';
+    document.getElementById('card-dados').style.display='block';
+    document.getElementById('inp-nome').focus();
+  } else {
+    const err=document.getElementById('codigo-error');
+    err.querySelector('span').textContent=res.msg||'Código inválido.';
+    err.style.display='flex';
+    document.getElementById('inp-codigo').style.borderColor='#d94f34';
+    document.getElementById('inp-codigo').animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:300,easing:'ease-out'});
+  }
+}
+function resetCodigoError(){document.getElementById('codigo-error').style.display='none';document.getElementById('inp-codigo').style.borderColor='';}
+(function(){const p=new URLSearchParams(window.location.search),c=p.get('code');if(!c)return;document.getElementById('inp-codigo').value=c.toUpperCase();setTimeout(validateCodigo,120);})();
+
+// ══════════════════════════════════════════════
+//  QUESTIONS  (A=D, B=I, C=S, D=C)
+// ══════════════════════════════════════════════
+const QUESTIONS = [
+  // Questões 1-15: características positivas
+  {n:1, text:'Minha principal característica é:', a:'Autoconfiante', b:'Animado', c:'Mediador', d:'Detalhista'},
+  {n:2, text:'Minha principal característica é:', a:'Persuasivo', b:'Brincalhão', c:'Sereno', d:'Persistente'},
+  {n:3, text:'Minha principal característica é:', a:'Energético', b:'Sociável', c:'Tranquilo', d:'Metódico'},
+  {n:4, text:'Minha principal característica é:', a:'Competitivo', b:'Convincente', c:'Controlado', d:'Atencioso'},
+  {n:5, text:'Minha principal característica é:', a:'Habilidoso', b:'Carismático', c:'Reservado', d:'Respeitoso'},
+  {n:6, text:'Minha principal característica é:', a:'Autossuficiente', b:'Espirituoso', c:'Satisfeito', d:'Exato'},
+  {n:7, text:'Minha principal característica é:', a:'Positivo', b:'Generoso', c:'Paciente', d:'Planejador'},
+  {n:8, text:'Minha principal característica é:', a:'Seguro', b:'Espontâneo', c:'Tímido', d:'Organizado'},
+  {n:9, text:'Minha principal característica é:', a:'Franco', b:'Otimista', c:'Calmo', d:'Ordeiro'},
+  {n:10, text:'Minha principal característica é:', a:'Audacioso', b:'Descontraído', c:'Diplomático', d:'Minucioso'},
+  {n:11, text:'Minha principal característica é:', a:'Confiante', b:'Alegre', c:'Estável', d:'Obediente'},
+  {n:12, text:'Minha principal característica é:', a:'Independente', b:'Amigável', c:'Servidor', d:'Idealista'},
+  {n:13, text:'Minha principal característica é:', a:'Decidido', b:'Entusiasmado', c:'Tranquilo', d:'Exigente'},
+  {n:14, text:'Minha principal característica é:', a:'Destemido', b:'Comunicador', c:'Acolhedor', d:'Preciso'},
+  {n:15, text:'Minha principal característica é:', a:'Vigoroso', b:'Engraçado', c:'Amigável', d:'Disciplinado'},
+  // Questões 16-30: pontos de atenção
+  {n:16, text:'Minha principal característica é:', a:'Agressivo', b:'Metido', c:'Triste', d:'Inflexível'},
+  {n:17, text:'Minha principal característica é:', a:'Insensível', b:'Indisciplinado', c:'Desinteressado', d:'Rancoroso'},
+  {n:18, text:'Minha principal característica é:', a:'Inflexível', b:'Repetitivo', c:'Relutante', d:'Ressentido'},
+  {n:19, text:'Minha principal característica é:', a:'Agressivo', b:'Esquecido', c:'Moroso', d:'Complicado'},
+  {n:20, text:'Minha principal característica é:', a:'Impaciente', b:'Inoportuno', c:'Indeciso', d:'Inseguro'},
+  {n:21, text:'Minha principal característica é:', a:'Frio', b:'Imprevisível', c:'Desligado', d:'Impopular'},
+  {n:22, text:'Minha principal característica é:', a:'Orgulhoso', b:'Permissivo', c:'Simples', d:'Cauteloso'},
+  {n:23, text:'Minha principal característica é:', a:'Discutidor', b:'Desorganizado', c:'Incerto', d:'Preocupado'},
+  {n:24, text:'Minha principal característica é:', a:'Ousado', b:'Ingênuo', c:'Submisso', d:'Negativo'},
+  {n:25, text:'Minha principal característica é:', a:'Dominador', b:'Egoísta', c:'Retraído', d:'Teimoso'},
+  {n:26, text:'Minha principal característica é:', a:'Indelicado', b:'Tagarela', c:'Tímido', d:'Inflexível'},
+  {n:27, text:'Minha principal característica é:', a:'Mandão', b:'Desorganizado', c:'Confuso', d:'Chateado'},
+  {n:28, text:'Minha principal característica é:', a:'Intolerante', b:'Inconstante', c:'Desligado', d:'Introvertido'},
+  {n:29, text:'Minha principal característica é:', a:'Manipulador', b:'Desordenado', c:'Complacente', d:'Resmungão'},
+  {n:30, text:'Minha principal característica é:', a:'Desobediente', b:'Convencido', c:'Lento', d:'Cético'},
+];
+
+// Map option letter to DISC profile
+const LETTER_MAP = {a:'D', b:'I', c:'S', d:'C'};
+
+const PROFILES = {
+  D: {
+    name:'Dominância', color:'var(--d-color)', bg:'var(--d-bg)', light:'var(--d-light)',
+    hex:'#c9472f', cardClass:'card-d',
+    subtitle:'Orientado a resultados · Líder nato · Desafiador',
+    desc:`Um dominante é uma pessoa ativa, otimista e dinâmica. Líder nato, não tem medo de assumir riscos e de enfrentar desafios. É trabalhador, com enorme disposição física e muita determinação e perseverança.`,
+    desc2:`Tem autonomia, independência e sabe se impor. É autoconfiante e acredita fortemente no seu ponto de vista. Tende primeiro a executar para depois pensar em como fazê-lo.`,
+    attention:['Pode ser autoritário e inflexível','Tende a atropelar pessoas que cruzam seu caminho','Raciocínio focado demais na ação, pouco na reflexão','Dificuldade em ouvir e considerar opiniões alheias'],
+  },
+  I: {
+    name:'Influência', color:'var(--i-color)', bg:'var(--i-bg)', light:'var(--i-light)',
+    hex:'#d4922a', cardClass:'card-i',
+    subtitle:'Orientado a pessoas · Extrovertido · Comunicador',
+    desc:`Extrovertido, falante, ativo e adaptável. Passa de um assunto a outro com facilidade. Gosta de trabalhos que envolvam movimentação e autonomia. É amigo de todos e atua melhor em equipe.`,
+    desc2:`São festivos, animados e comunicativos, tendendo a serem líderes. Apresenta rapidez e agilidade em suas atitudes. É imaginativo e tem sentimento artístico.`,
+    attention:['Precisa ser monitorado para não se desviar do objetivo','Pode se dispersar com facilidade','Tendência à impulsividade e falta de foco','Necessidade constante de aprovação e reconhecimento'],
+  },
+  S: {
+    name:'Segurança', color:'var(--s-color)', bg:'var(--s-bg)', light:'var(--s-light)',
+    hex:'#2e9e66', cardClass:'card-s',
+    subtitle:'Orientado a rotina · Estável · Paciente',
+    desc:`Calmo, tranquilo, prudente e autocontrolado. Gosta de rotina e atua em conformidade com normas e regras estabelecidas. Decide sem pressão, com frequência com bom senso.`,
+    desc2:`É paciente, observador, passivo e tem boa memória. Em situações emergenciais, age com tranquilidade. Planeja a melhor forma de executar uma tarefa antes de iniciá-la e, após o início, segue por conta própria.`,
+    attention:['Pode carecer de aptidões criativas','Resistência a mudanças e novidades','Dificuldade em tomar decisões sob pressão','Pode ser excessivamente passivo em situações que exigem ação'],
+  },
+  C: {
+    name:'Conformidade', color:'var(--c-color)', bg:'var(--c-bg)', light:'var(--c-light)',
+    hex:'#2f6ec9', cardClass:'card-c',
+    subtitle:'Orientado a regras · Analítico · Perfeccionista',
+    desc:`Preocupado, rígido, porém calmo. Discreto e com tendência a ser calado e retraído. Tem habilidade com tarefas detalhadas e compromete-se com o trabalho. É intuitivo, curioso e tem inteligência verbal.`,
+    desc2:`Observa as oportunidades e apresenta soluções para problemas urgentes. Deve ser constantemente estimulado a vencer a fase do pensar e do fazer — por ser perfeccionista, sempre acha que seu trabalho está imperfeito.`,
+    attention:['Tendência ao pessimismo','Sensível a críticas, magoa-se com facilidade','Precisa de reforços de aprovação constantes','Dificuldade em finalizar tarefas por buscar a perfeição'],
+  },
+};
+
+const PER_PAGE = 10;
+let answers = {}, userData = {}, currentPage = 0;
+
+// ══════════════════════════════════════════════
+//  START
+// ══════════════════════════════════════════════
+function startTest(){
+  const nome=document.getElementById('inp-nome').value.trim();
+  const whats=document.getElementById('inp-whats').value.trim();
+  const email=document.getElementById('inp-email').value.trim();
+  if(!nome||!whats||!email){alert('Preencha nome, WhatsApp e e-mail.');return;}
+  userData={nome,whats,email}; answers={}; currentPage=0;
+  document.getElementById('screen-access').classList.remove('active');
+  document.getElementById('screen-test').classList.add('active');
+  renderPage(); window.scrollTo({top:0});
+}
+
+// ══════════════════════════════════════════════
+//  RENDER PAGE
+// ══════════════════════════════════════════════
+function renderPage(){
+  const wrap=document.getElementById('test-wrap');
+  const start=currentPage*PER_PAGE, end=Math.min(start+PER_PAGE,QUESTIONS.length);
+  const pageQs=QUESTIONS.slice(start,end);
+  const isNeg = start >= 15;
+  let html='';
+
+  if(start < 15 && end > 15){
+    // Page spans both groups — split them
+  }
+
+  // Group header
+  html+=`<div class="group-header"><hr/><span class="group-tag">${
+    start >= 15 ? '⚠️ Questões 16–30 · Características a Observar' : '✨ Questões 1–15 · Características Positivas'
+  }</span><hr/></div>`;
+
+  pageQs.forEach(q=>{
+    const ans=answers[q.n];
+    // Before q16, add negative group separator
+    if(q.n===16){
+      html+=`<div class="group-header" style="margin-top:28px"><hr/><span class="group-tag">⚠️ Questões 16–30 · Características a Observar</span><hr/></div>`;
+    }
+    const opts=[
+      {letter:'a',disc:'D',text:q.a,selClass:ans==='a'?'sel-d':''},
+      {letter:'b',disc:'I',text:q.b,selClass:ans==='b'?'sel-i':''},
+      {letter:'c',disc:'S',text:q.c,selClass:ans==='c'?'sel-s':''},
+      {letter:'d',disc:'C',text:q.d,selClass:ans==='d'?'sel-c':''},
+    ];
+    html+=`<div class="q-card${ans?' answered':''}" id="qcard-${q.n}">
+      <div class="q-num">Questão ${q.n}</div>
+      <div class="q-text">${q.text}</div>
+      <div class="q-options">
+        ${opts.map(o=>`<button class="opt-btn ${o.selClass}" onclick="setAnswer(${q.n},'${o.letter}')">
+          <span class="opt-letter">${o.letter.toUpperCase()}</span>${o.text}
+        </button>`).join('')}
+      </div>
+    </div>`;
+  });
+
+  const isLast = end >= QUESTIONS.length;
+  html+=`<div class="nav-btns">
+    ${currentPage>0?`<button class="btn-secondary" onclick="prevPage()">← Anterior</button>`:'<div></div>'}
+    ${isLast
+      ?`<button class="btn-primary" style="background:#2e9e66" onclick="showResults()">Ver Resultado <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>`
+      :`<button class="btn-primary" onclick="nextPage()">Próximo <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>`
+    }
+  </div>`;
+
+  wrap.innerHTML=html;
+  updateProgress();
+}
+
+function setAnswer(n,letter){
+  answers[n]=letter;
+  const card=document.getElementById('qcard-'+n);
+  if(!card)return;
+  card.classList.add('answered');
+  // Map option letter -> CSS sel class (A=sel-d, B=sel-i, C=sel-s, D=sel-c)
+  const SEL_CLASS={a:'sel-d',b:'sel-i',c:'sel-s',d:'sel-c'};
+  card.querySelectorAll('.opt-btn').forEach((btn,i)=>{
+    const l=['a','b','c','d'][i];
+    btn.className='opt-btn'+(letter===l?' '+SEL_CLASS[l]:'');
+  });
+  updateProgress();
+}
+
+function updateProgress(){
+  const done=Object.keys(answers).length;
+  document.getElementById('progress-fill').style.width=(done/30*100)+'%';
+  document.getElementById('progress-count').textContent=done+' / 30';
+}
+
+function nextPage(){
+  const start=currentPage*PER_PAGE, end=Math.min(start+PER_PAGE,QUESTIONS.length);
+  const missing=QUESTIONS.slice(start,end).filter(q=>!answers[q.n]);
+  if(missing.length){alert('Responda todas as questões desta página antes de continuar.');return;}
+  currentPage++; renderPage(); window.scrollTo({top:0,behavior:'smooth'});
+}
+function prevPage(){currentPage--;renderPage();window.scrollTo({top:0,behavior:'smooth'});}
+
+// ══════════════════════════════════════════════
+//  RESULTS
+// ══════════════════════════════════════════════
+function calcScores(){
+  const scores={D:0,I:0,S:0,C:0};
+  QUESTIONS.forEach(q=>{const a=answers[q.n];if(a)scores[LETTER_MAP[a]]++;});
+  return scores;
+}
+
+function showResults(){
+  const missing=QUESTIONS.filter(q=>!answers[q.n]);
+  if(missing.length){alert(`Ainda há ${missing.length} questão(ões) sem resposta.`);return;}
+
+  document.getElementById('screen-test').classList.remove('active');
+  document.getElementById('screen-results').classList.add('active');
+
+  const scores=calcScores();
+  const total=30;
+  const now=new Date().toLocaleDateString('pt-BR');
+
+  document.getElementById('res-pinfo').innerHTML=
+    `<strong>${userData.nome}</strong><span>${userData.email} · ${userData.whats} · ${now}</span>`;
+
+  // Sort profiles by score descending
+  const sorted=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  const dominant=sorted[0][0];
+
+  // ── Bar chart ──
+  let barsHtml='';
+  sorted.forEach(([key,val])=>{
+    const p=PROFILES[key];
+    const pct=Math.round(val/total*100);
+    const isDom=key===dominant;
+    barsHtml+=`<div class="chart-row">
+      <div class="chart-label">
+        <span class="letter" style="color:${p.hex}">${key}</span>
+        <span class="name">${p.name}</span>
+      </div>
+      <div class="chart-track">
+        <div class="chart-bar" style="width:${pct}%;background:${p.hex}">
+          <span class="chart-bar-val">${val}</span>
+          ${isDom?`<span class="dominant-tag" style="background:rgba(255,255,255,.25);color:#fff">Predominante</span>`:''}
+        </div>
+      </div>
+      <span class="chart-pct" style="color:${p.hex}">${pct}%</span>
+    </div>`;
+  });
+  document.getElementById('chart-bars').innerHTML=barsHtml;
+
+  // ── Profile cards ──
+  let profHtml='';
+  sorted.forEach(([key,val],idx)=>{
+    const p=PROFILES[key];
+    const pct=Math.round(val/total*100);
+    if(idx>1&&val<4) return; // skip very low profiles
+    profHtml+=`<div class="profile-card ${p.cardClass} ${idx===0?'dominant-card':'secondary-card'}" data-letter="${key}">
+      <h4>
+        <span style="font-size:28px;font-weight:900;color:${p.hex}">${key}</span>
+        ${p.name}
+        <span class="score-badge" style="background:${p.hex}20;color:${p.hex}">${val} pontos · ${pct}%</span>
+      </h4>
+      <div class="subtitle" style="color:${p.hex}">${p.subtitle}</div>
+      <p>${p.desc}</p>
+      <p>${p.desc2}</p>
+    </div>`;
+  });
+  document.getElementById('profiles-content').innerHTML=profHtml;
+
+  // ── Attention points — from dominant profile ──
+  const domProfile=PROFILES[dominant];
+  let attnHtml='';
+  domProfile.attention.forEach(item=>{
+    attnHtml+=`<div class="attention-item" style="border-color:${domProfile.hex}40;background:${domProfile.hex}08">
+      <div class="attention-dot" style="background:${domProfile.hex}"></div>
+      <span class="attention-text">${item}</span>
+    </div>`;
+  });
+  // Also add secondary profile attention if close
+  if(sorted[1][1]>=6){
+    const sec=PROFILES[sorted[1][0]];
+    sec.attention.slice(0,2).forEach(item=>{
+      attnHtml+=`<div class="attention-item" style="border-color:${sec.hex}40;background:${sec.hex}08">
+        <div class="attention-dot" style="background:${sec.hex}"></div>
+        <span class="attention-text">${item}</span>
+      </div>`;
+    });
+  }
+  document.getElementById('attention-grid').innerHTML=attnHtml;
+
+  // ── Conclusion ──
+  const secKey=sorted[1][0];
+  const secProfile=PROFILES[secKey];
+  document.getElementById('conclusion-card').innerHTML=`
+    <h3>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Seu Perfil: ${domProfile.name}${sorted[1][1]>=6?' + '+secProfile.name:''}
+    </h3>
+    <p>Seu perfil predominante é o <strong>${dominant} — ${domProfile.name}</strong> com ${scores[dominant]} pontos (${Math.round(scores[dominant]/total*100)}%). ${sorted[1][1]>=6?`Você também apresenta características significativas de <strong>${secKey} — ${secProfile.name}</strong>, o que cria uma combinação única de traços comportamentais.`:''}</p>
+    <p>Lembre-se: o DISC é um retrato do seu comportamento <strong>neste momento</strong>. Os perfis não são bons ou ruins — cada um tem forças e pontos de atenção. O objetivo é o autoconhecimento para que você possa potencializar seus pontos fortes e trabalhar suas limitações.</p>
+    <p>Há várias combinações possíveis de predominâncias que geram personalidades singulares — <strong>cada pessoa é única</strong>.</p>`;
+
+  window.scrollTo({top:0,behavior:'smooth'});
+  // Animate bars after render
+  setTimeout(()=>{
+    document.querySelectorAll('.chart-bar').forEach(b=>{
+      const w=b.style.width; b.style.width='0%';
+      requestAnimationFrame(()=>{ b.style.transition='width .8s cubic-bezier(.4,0,.2,1)'; b.style.width=w; });
+    });
+  }, 100);
+}
+
+// ══════════════════════════════════════════════
+//  RESTART
+// ══════════════════════════════════════════════
+function restart(){
+  answers={}; userData={}; currentPage=0;
+  ['inp-nome','inp-whats','inp-email','inp-codigo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('card-dados').style.display='none';
+  document.getElementById('card-codigo').style.opacity='1';
+  document.getElementById('card-codigo').style.pointerEvents='auto';
+  resetCodigoError();
+  document.getElementById('screen-results').classList.remove('active');
+  document.getElementById('screen-access').classList.add('active');
+  window.scrollTo({top:0});
+}
+</script>
+</body>
+</html>
