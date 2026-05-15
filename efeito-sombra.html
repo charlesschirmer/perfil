@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O Efeito Sombra — Retorno</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #111118; --paper: #f8f7f3; --card: #fff; --muted: #888480; --border: #e4e0d8;
+  --accent: #c9472f; --gold: #c9a84c;
+  --z1-color: #2e9e66; --z1-bg: #eef8f3;   /* 3-37: zona neutra / verde */
+  --z2-color: #d4922a; --z2-bg: #fdf8ee;   /* 38-75: atenção / âmbar */
+  --z3-color: #c9472f; --z3-bg: #fdf2ef;   /* 76-112: crítico / vermelho */
+  --shadow-dark: #1a1025;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
+
+/* HEADER */
+.site-header { background: var(--shadow-dark); color: #fff; padding: 10px 28px; display: flex; align-items: center; gap: 16px; }
+.site-header .badge { height: 60px; display: flex; align-items: center; flex-shrink: 0; background: #fff; border-radius: 10px; padding: 5px 10px; }
+.site-header .badge img { height: 50px; width: auto; display: block; }
+.site-header h1 { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; }
+.site-header p { font-size: 11px; color: #999; margin-top: 2px; }
+@media(max-width:600px){ .site-header{padding:8px 14px;gap:10px;} .site-header .badge{height:44px;} .site-header .badge img{height:36px;} .site-header h1{font-size:14px;} .site-header p{display:none;} }
+
+.screen { display: none; }
+.screen.active { display: flex; flex-direction: column; flex: 1; }
+
+/* ══ ACCESS ══ */
+.access-wrap { max-width: 580px; margin: 0 auto; padding: 48px 20px 80px; display: flex; flex-direction: column; gap: 22px; width: 100%; }
+
+.access-hero {
+  background: var(--shadow-dark);
+  border-radius: 18px; padding: 44px; color: #fff;
+  position: relative; overflow: hidden;
+}
+.access-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 80% 50%, rgba(160,100,220,.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+.access-hero::after {
+  content: '☯'; position: absolute; right: 24px; bottom: -20px;
+  font-size: 160px; opacity: .05; line-height: 1; pointer-events: none;
+}
+.access-hero h2 { font-family: 'Playfair Display', serif; font-size: 30px; line-height: 1.15; margin-bottom: 10px; position: relative; }
+.access-hero h2 span { color: var(--gold); }
+.access-hero p { font-size: 13.5px; line-height: 1.75; color: #c0bdb8; position: relative; }
+.access-stats { display: flex; gap: 14px; margin-top: 24px; flex-wrap: wrap; position: relative; }
+.access-stats div { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 10px; padding: 12px 16px; text-align: center; }
+.access-stats strong { display: block; font-size: 22px; font-family: 'Playfair Display', serif; color: var(--gold); }
+.access-stats span { font-size: 11px; color: #aaa; }
+
+.zone-preview { display: flex; flex-direction: column; gap: 8px; }
+.zone-pill { padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; border: 1.5px solid; display: flex; align-items: center; gap: 10px; }
+.zone-pill .zone-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.zone-pill.z1 { background: var(--z1-bg); border-color: var(--z1-color); color: var(--z1-color); }
+.zone-pill.z2 { background: var(--z2-bg); border-color: var(--z2-color); color: var(--z2-color); }
+.zone-pill.z3 { background: var(--z3-bg); border-color: var(--z3-color); color: var(--z3-color); }
+
+.form-card { background: var(--card); border-radius: 14px; border: 1px solid var(--border); padding: 28px 32px; }
+.form-card h3 { font-family: 'Playfair Display', serif; font-size: 19px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+.form-card h3 .num { width: 28px; height: 28px; background: var(--accent); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.field { margin-bottom: 13px; }
+.field label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.field input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--paper); outline: none; transition: border-color .18s, box-shadow .18s; }
+.field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,71,47,.1); background: #fff; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+@media(max-width:540px){ .field-row{grid-template-columns:1fr;} .access-hero{padding:28px 22px;} .form-card{padding:22px 18px;} }
+#codigo-error { display:none; margin-top:8px; padding:10px 14px; background:#fdf2ef; border:1.5px solid #d94f34; border-radius:8px; font-size:13px; color:#d94f34; align-items:center; gap:8px; }
+.btn-primary { display: inline-flex; align-items: center; gap: 9px; background: var(--accent); color: #fff; border: none; border-radius: 11px; padding: 13px 28px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform .14s, box-shadow .14s; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(201,71,47,.32); }
+.btn-secondary { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--muted); border: 1.5px solid var(--border); border-radius: 11px; padding: 12px 22px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; }
+.btn-secondary:hover { border-color: var(--ink); color: var(--ink); }
+
+/* ══ PROGRESS ══ */
+.progress-wrap { background: var(--shadow-dark); border-bottom: 1px solid #2a2535; position: sticky; top: 0; z-index: 100; padding: 11px 28px; display: flex; align-items: center; gap: 16px; }
+.progress-label { font-size: 12px; font-weight: 600; color: #888; white-space: nowrap; }
+.progress-track { flex: 1; height: 5px; background: rgba(255,255,255,.1); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #7c3aed, var(--gold)); border-radius: 99px; transition: width .4s ease; }
+.progress-count { font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; }
+
+/* ══ TEST ══ */
+.test-wrap { max-width: 700px; margin: 0 auto; padding: 28px 20px 80px; width: 100%; }
+
+/* Question card */
+.q-card {
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 22px 24px; margin-bottom: 14px;
+  animation: fadeUp .22s ease both;
+  transition: border-color .2s;
+}
+.q-card.answered { border-color: rgba(124,58,237,.35); background: #fdfbff; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+.q-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
+.q-num {
+  min-width: 32px; height: 32px; flex-shrink: 0;
+  border-radius: 8px; background: var(--shadow-dark); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; margin-top: 1px;
+}
+.q-card.answered .q-num { background: #7c3aed; }
+.q-text { font-size: 14px; font-weight: 500; line-height: 1.6; padding-top: 5px; }
+
+/* 2×2 option grid */
+.q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media(max-width:500px){ .q-options{grid-template-columns:1fr;} }
+
+.opt-btn {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px; border: 1.5px solid var(--border);
+  border-radius: 10px; background: var(--paper);
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 500; color: var(--ink);
+  text-align: left; line-height: 1.5;
+  transition: all .12s;
+}
+.opt-btn:hover { border-color: #9b6aee; background: #faf6ff; transform: translateY(-1px); }
+.opt-letter {
+  width: 22px; height: 22px; flex-shrink: 0; border-radius: 5px;
+  background: var(--border); color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800; margin-top: 1px;
+  transition: background .12s, color .12s;
+}
+.opt-btn.selected { border-color: #7c3aed; background: #f5f0ff; color: #5b21b6; font-weight: 600; }
+.opt-btn.selected .opt-letter { background: #7c3aed; color: #fff; }
+
+.nav-btns { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; gap: 12px; }
+@media(max-width:480px){ .btn-primary,.btn-secondary{flex:1;justify-content:center;padding:12px;} }
+
+/* ══ RESULTS ══ */
+.results-wrap { max-width: 760px; margin: 0 auto; padding: 36px 20px 80px; width: 100%; }
+
+/* Result hero — dynamic color by zone */
+.result-hero {
+  border-radius: 18px; padding: 36px 40px; color: #fff;
+  margin-bottom: 28px; position: relative; overflow: hidden;
+}
+.result-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 80% 40%, rgba(255,255,255,.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+.result-hero h2 { font-family: 'Playfair Display', serif; font-size: 26px; margin-bottom: 6px; position: relative; }
+.result-hero .pinfo strong { color: rgba(255,255,255,.9); font-size: 15px; display: block; }
+.result-hero .pinfo span { font-size: 12px; color: rgba(255,255,255,.6); }
+
+/* Score meter */
+.meter-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 28px 32px; margin-bottom: 22px; }
+.meter-card h3 { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 20px; }
+
+.score-display { display: flex; align-items: center; gap: 28px; margin-bottom: 24px; flex-wrap: wrap; }
+.score-big { font-family: 'Playfair Display', serif; font-size: 72px; font-weight: 900; line-height: 1; }
+.score-meta { flex: 1; }
+.score-zone-badge { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; padding: 4px 12px; border-radius: 99px; display: inline-block; margin-bottom: 8px; }
+.score-zone-label { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.score-range { font-size: 12px; color: var(--muted); font-weight: 600; }
+
+/* Meter track */
+.meter-track { height: 14px; background: var(--border); border-radius: 99px; overflow: hidden; position: relative; margin-bottom: 8px; }
+.meter-fill { height: 100%; border-radius: 99px; transition: width 1s cubic-bezier(.4,0,.2,1); }
+.meter-labels { display: flex; justify-content: space-between; font-size: 10px; font-weight: 700; color: var(--muted); }
+
+/* Zone segments on meter */
+.meter-zones { display: flex; height: 6px; border-radius: 99px; overflow: hidden; margin-bottom: 4px; }
+.mz1 { flex: 35; background: var(--z1-color); opacity: .5; }
+.mz2 { flex: 38; background: var(--z2-color); opacity: .5; }
+.mz3 { flex: 37; background: var(--z3-color); opacity: .5; }
+
+/* Interpretation */
+.interp-card {
+  border-radius: 14px; padding: 28px 30px; margin-bottom: 22px;
+  border: 2px solid; position: relative; overflow: hidden;
+}
+.interp-card::before {
+  content: attr(data-num);
+  position: absolute; right: 20px; top: -10px;
+  font-family: 'Playfair Display', serif; font-size: 120px;
+  font-weight: 900; opacity: .05; line-height: 1; pointer-events: none;
+}
+.interp-card h3 { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 8px; }
+.interp-card .tagline { font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; margin-bottom: 16px; }
+.interp-card p { font-size: 14px; line-height: 1.8; }
+
+/* Per-question breakdown */
+.breakdown-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 24px 28px; margin-bottom: 22px; }
+.breakdown-card h3 { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 16px; }
+.breakdown-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+@media(max-width:500px){ .breakdown-grid{grid-template-columns:repeat(2,1fr);} }
+.bk-item {
+  background: var(--paper); border: 1.5px solid var(--border);
+  border-radius: 9px; padding: 10px; text-align: center;
+}
+.bk-item.bk-low { border-color: var(--z1-color); background: var(--z1-bg); }
+.bk-item.bk-mid { border-color: var(--z2-color); background: var(--z2-bg); }
+.bk-item.bk-high { border-color: var(--z3-color); background: var(--z3-bg); }
+.bk-q { font-size: 10px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+.bk-ans { font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+.bk-pts { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; }
+
+.conclusion-card { background: var(--shadow-dark); color: #fff; border-radius: 14px; padding: 28px 32px; margin-bottom: 24px; }
+.conclusion-card h3 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--gold); margin-bottom: 14px; }
+.conclusion-card p { font-size: 14px; line-height: 1.75; color: #ccc; margin-bottom: 10px; }
+.conclusion-card p:last-child { margin-bottom: 0; }
+.conclusion-card strong { color: #fff; }
+
+.result-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.result-actions .btn-primary, .result-actions .btn-secondary { flex: 1; justify-content: center; }
+@media(max-width:500px){ .result-actions{flex-direction:column;} }
+
+@media(max-width:600px){
+  .result-hero{padding:24px 20px;} .result-hero h2{font-size:22px;}
+  .meter-card{padding:20px 16px;} .score-big{font-size:56px;}
+  .interp-card{padding:20px 18px;} .breakdown-card{padding:18px 16px;}
+  .conclusion-card{padding:22px 18px;}
+}
+@media print {
+  .site-header,.progress-wrap,.result-actions,.nav-btns,.screen:not(.active),.no-print{display:none!important}
+  .interp-card,.breakdown-card{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="badge"><img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCABXAHYDASIAAhEBAxEB/8QAHQAAAQUBAAMAAAAAAAAAAAAAAAMFBgcIBAECCf/EAD4QAAEDBAAEBAIIAwUJAAAAAAECAwQABQYRBxIhMQgTQVEiYRQVIzJxgZGhFrHBQlJicrIXM0NEU2SS0dL/xAAbAQABBQEBAAAAAAAAAAAAAAAAAQIDBAUGB//EADERAAEEAQMCBAQEBwAAAAAAAAEAAgMRBAUhMRJBE1FxgQYyYZEUUqGxBxUjYsHR4f/aAAwDAQACEQMRAD8A2XRRRQhFFFR7iHlMHDcRuGQz+VTcVpSm2isJLy9HSB8yaRxDRZT443SvDGCydgkOIueY3gVpRccinGOh1flstoQVuOq0ToJA3rp37VmTNvE1ld0StjGoDNia5iEPq084pO+h0U6B/Wqhz7L7zm+TP5Be3y4+6SGWunJHb2dNga9N96Y207IFYGVqL3mmGgvXND+DsWBgflN63/Xge3f3Vnw+OfFVqQh1WWKfSlQUptUVrS/l9z+VWljPi1sX2cbK7M7BkqeDQcaJKVjptWiOnWstznQlBQk6A+8R6fKi2wW1KS/IQhR2C1zDZT171Zhc/Gi8WZx37LC1KLH1zPGnaXA0dPzPqqrk7UK7bgknil9OLZNYuNujToxJZktJdbJGtpIBH86bs0yex4fjczIciuCIFtiI5nXVAk+wCUgEqJ9AASarHw+cSmrpwom3DJpDMRGOo8uTJUdAspbBCyNd9AjQ9qyZxj4j3fjpxMZjJbkx8RgvfZRkrKdRwpQVLVsDry9denQe5rTilbKwPHBXE6hhSYGS/Gl+Zpr/AL7rf+OZXj9/s1ru1turDkW6MJfhFxXlreQexCFaV+1PdfNzCL3Du3HCHepEkRbLhEHzYwQrYdixVfDr5qCt6Hfdbo4K8TrHxTxV/ILG08y0zKMZ1t0fElYSk/yUKkVNTuiiihCKKKKEIooooQhWwDrvWTfGzk8mbktrwZlpPkR20zlLCuqnFc6QnXyA/etZHuKw/wCIJxcrjFf7nK5kR2GVMRnT28wJISn9Sao6g4iKh3XUfCMTX6h1uF9IJHrwFUK0KDxSR8QOiAOxpZlO97Ojon9K6ozPJZnbidLU46Y5CvTaebmpN9jyIbfmApfc+Nse6D61iY8fXM0HzXqOt5rsbS8iVnIaa9eP0tNrh28gq67VtXzpzSAEo5dcuumqbXwNkelK2NSi04knY5v0rS1aIviD74/yuH/h1ntx9QdiFt+IOfLp3r0P7r2ym4XRrHUW2FKeTHlP6djJVpL51oA/KmCRIcsNs+prO4XLtO+CQ82P+Gf+WA/fdOmXvrahMIbVyq5yT76NR5mW1aVLn686cR9iD18k/wDU+f4VJpV/hm35lUfj/o/nknT+Vl+tJ0vSpNmxmJgNsQ3Km3J9uQ+80NOBxQ5fopPqAdE/M1uzwcWuyWfgtDt9tUr6c28frdCh1amaTzoPvrp71ga0pft7Tl1kpMq+3Q+TbmQNrS6pSdSAfQ9dAe5r6T8CMfmY3wqsEC6seXdnIaH7iTrmMhQBVze59PyrSC4xTqiiilQiiiihCKKKKEIPv7VkHxi2WPZ7lEcbkFxyfIXJUjWuXexWvqrPjjwsb4kGxkTW4S4MsLfWpvmLjP8AaQOvf/3VbLiMkRa3lbfw9nR4WcyWU03e/sVjm9xErueNQHAUMyIUYrQga6rJBP41zSbbdLte5kG1wFyl21txIaT1UhlB0T8yP61YeQ4vco3GjJ4phOyVWS3uzoaAk6LSEjkI9+56e9WF4PcJn/TJ/EK7IcaXKStiMhadFYUQVr17bGhWPDE4zgDz/ZejalqGONKkc8ghzAAPMv3H2WT3VcyCpGlEdCAeqT7H2PyrvtUfyo3Xp5p5iT6CtC8evDdcU3ublvDRCHhKX50ywqVypceJJLiFE6Hf7v6VnTMomU48kw8jx+baXCSlaW2isfhvtWhnwSztEbOO5XGfCOq6fpEsmZlWZAKY0Dm+TfA8t+3CYshlCXcFKQfs2xy6+YpkdUlpfnOEJSjrzH+m+/4VK8cwrOMr0cVxKXcknsHG+Tf6kD960JwW8JsiRKg37ihIHkBBc/h9tR+BzprmcCyNdOoHfturkUQjYGN4C5zOzJc7JkyZfmeST/r24UW8HHByZm2Ss8QssirTYbc6F25lSlJ8+QkpKVgf3ARv5n5Ct3Aevqe9IwIkaBDZhw2G48dhAQ002NJQkDQAFL1KqiKKKKEIooooQiiua5zY1tt8mfMc8uPGaU66vW+VIGyf2qqVeI/hOlfL9eyz11sQXNf6aY+VjPmNK1j4WRkgmFhdXkCVb9FROBxDxGdg8nMod3S/ZoySp59KDzI13BTre+vbVQweI7hSdavkzr/2Ln/zTXTRtq3BSRabmTEiOJxrY0DsfqraMdkvqf8AJa81SeQr5BzFPtv2+VKISEICUhKQOwA0BVV3DxAcMILzbT97kbcbDiSiG4ocp7dhXfh/Gnh/leQM2Oy3WQ9NfB8tK4q0A6+ZFIJ4iaDhae/Ss9sZkdE7pHejVKxiN0k8w27/ALxppf8AmRuqvyDj9w2st3k2t+5ypEiM8pl7yIqlJQpJ0RvoD19t1KsP4hYplmOzL9ZLkZEKESJJU0pC2tJ5uqSN9vWlbPG40HC02XS8yGMSSRODT3INbqTtNIbGkIbQP8KdUoBqqmX4h+FqVlH13KOjrYhOEf6al9t4g4nccMk5dCuyX7RFSVPOpQeZGu4Kdb3+VDZ4ncOH3SzaTnQAGSFwBNCwRZPAUqoqM4RnONZjY5F5sM9UiHHcLbyltKQUKABIIIB7EV5wrOcazCHPl2Kf57EB4tSFrQUBJA3vr3GvWnCRhqjyoH4WRH19TCOmr2O18X5WpLRVUXHxAcNoVwchm5S3y2soW61FUpAI6dD6j8KsHE8js2U2Vq72OaiXDc6BYBBB9QQeoNNZPG801wJU2TpebixiSeJzWngkEBO1FFFSqgmTOuX+Dr3zAFP0B3ex/gVWPvD9kXCi0YZfIXEFppyZKkDykqhl1SmuTslQB18W/b0rYOdEDDr2VdvoDu//AAVWVvDfg1mzXg7mUeZbWpFxS6Uw5BT8bS/K2nlP41Qyg4yt6eaPK6zRHQt0+czEhvUzdpojfn2TfwjhyRwo4pXSKh1vHXIq2oqHP7+zr8SElIJp54BZjwit+I2yxZNakvXx6Xyc6oHmAlS9J+L26154aZJOuHhrzrEbo8FTrMwtLTXlhKkM9Ng676KVdT1rq4B8SeEuL8PIULJVtt3dl5Tqiq3FxQ+LaSFhJ/nVWMhrmbgbd/VbuY2SWLIBjc4+INmHeugUSaN/X691YvicxjG4/Ce43KPZYbctpKA08loBSBv0NMGKW60WXwsP5NAtsePd3LOsGWhsBzm2RvfepT4irvAvfh9lXe2vF6HNaaeYc5SOZBIIOj2pvwy1Sb74SRaoLJdlPWlwMo9VL6kD86svaDM7p/KsXFlezTohKTQmAN+VbgqPeDHG7HdMEvVyulrizZbtwVHU4+2FkthtB11+ajUR4HuN2XjXntliJLdu+jT2EsD7oSh3SOnyGx+dOvhb4jYngmJXiw5XcV2yei4LfLbjSjsciUlI0D8QKT0pv4Cxl37irneXxmXfqZUaa4h9SddXF8yU/jy7OqqMLSIg3nddBkslZLqD5gehwbRPBPau32TXwIvvC2y47foOftMrlPyAlpKohcJbCeySAddd+3pSvCeJIRw74oXeIhxvHVwXWYyXPVZJ5eh7kJKdmnPw7YVZ824Y5ozOtzT1wU4UxH1J+NlflkpIPyVqlOG+Qy5nh8zzDrk8kzLPHWW2wgApa9Qdd9KSaijB6WF3FOr9eVoZsrPGyGxWXeJEHgnYC20WivY36pv8Mt+mYplZsF4fDFsv9uL8dpX3Vun7it+hICh+lecYuD9h8P2fKb+F6Re/oSynpoKAB/rTjfcXfvXhlxrJ7a2Bc7Ht1boHx+SFK7H5HlP5U2cO7a7kXhtzhO1OPx7iJ5OtlRShKj/I0gDm1H/aSPcKV7secyZZof1Y2PH1ZJQPuCFa/h9wLGpXBdCZ1sZkrvDalSVrSCog9gD3GvSod4T7m/bOJmS4ayVG3pDzyAo75VNuhH7gj9K7uCHGjDrDwvYtN8muRLhBStKGQypXmp/skEDWz7GubwkWiRdM2yPOigtxXC5HQk9ypxYcI/IAVOxzHOgER3HP23WVlQ5UMGqOzgQxxHTd0T1Gun2rjstMIO0An1FFCRpIHsKK2l5gvWQy1IYcYeQFtuJKVpPYg9xTXi+NWPGYr0axW5qCy84XHEtjopR9aKKShdpwe4NLQdiuKJguKRZlylx7LHbduaCiYRv7YHvsU2/7KOHf0fyDiNtUjl5erQJ1+NFFN8Np7KYZc7eHn7lSGbjtlmY+mwSbcy5bEthpMbXwhI6AV1We2wrRbWbdbo6I0VlPK22nskUUU6hyojI8jpJ2591Ecv4T4BlVyTcb1jrL8oHZdbWpsr/zcpG/zqTWawWaz2cWi2W5iJBCeXyW06BGtdaKKaI2gkgbqV+XPJGI3vJaOBZoegXpjWOWTHGHmLJb2oTb7hccS2PvK964o+D4qxMuctmyx0PXRstzVDf2yT3BoopehvFJv4iWy7qNnnfn1TlbbHardZE2WHBaat6Wy2GAPh5fakcaxqx45Cdh2W3MwmHllbiEDoon3ooo6R5JDNIQQXHfc78n6qM5Bwg4eXy8G63HG2lylK5lKbcU2lR+aUkA/pU1tsGHboaIcCM1GjtjSW20hIFFFI2NjSS0VakmzcidjY5ZC4N4BJIHouiiiinqsv/Z" alt="Retorno"></div>
+  <div>
+    <h1>O Efeito Sombra</h1>
+    <p>Ferramenta de Mentoria · Autoavaliação</p>
+  </div>
+</header>
+
+<!-- ══ ACCESS ══ -->
+<div id="screen-access" class="screen active">
+  <div class="access-wrap">
+    <div class="access-hero">
+      <h2>O Efeito <span>Sombra</span></h2>
+      <p>Uma autoavaliação profunda para identificar o quanto sua "sombra" — os padrões inconscientes e comportamentos destrutivos — está influenciando sua vida, carreira e relacionamentos.</p>
+      <div class="access-stats">
+        <div><strong>20</strong><span>Questões</span></div>
+        <div><strong>3</strong><span>Zonas</span></div>
+        <div><strong>~8 min</strong><span>Duração</span></div>
+      </div>
+    </div>
+
+    <div class="zone-preview">
+      <div class="zone-pill z1"><div class="zone-dot" style="background:var(--z1-color)"></div>3 – 37 pontos · Zona Neutra</div>
+      <div class="zone-pill z2"><div class="zone-dot" style="background:var(--z2-color)"></div>38 – 75 pontos · Zona de Atenção</div>
+      <div class="zone-pill z3"><div class="zone-dot" style="background:var(--z3-color)"></div>76 – 112 pontos · Zona Crítica</div>
+    </div>
+
+    <div class="form-card" id="card-codigo">
+      <h3><span class="num">1</span> Código de Acesso</h3>
+      <div class="field">
+        <label>Código de acesso</label>
+        <input type="text" id="inp-codigo" placeholder="Digite o código fornecido" autocomplete="off"
+          oninput="resetCodigoError()" onkeydown="if(event.key==='Enter')validateCodigo()"
+          style="text-transform:uppercase;letter-spacing:.1em;font-weight:600;">
+        <div id="codigo-error">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Código inválido.</span>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="validateCodigo()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Validar Código
+      </button>
+    </div>
+
+    <div class="form-card" id="card-dados" style="display:none;">
+      <h3><span class="num">2</span> Suas Informações</h3>
+      <div class="field-row">
+        <div class="field"><label>Nome completo</label><input type="text" id="inp-nome" placeholder="Seu nome"></div>
+        <div class="field"><label>WhatsApp</label><input type="tel" id="inp-whats" placeholder="(xx) xxxxx-xxxx"></div>
+      </div>
+      <div class="field"><label>E-mail</label><input type="email" id="inp-email" placeholder="seu@email.com"></div>
+      <div style="margin-top:14px;">
+        <button class="btn-primary" onclick="startTest()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Iniciar Avaliação
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TEST ══ -->
+<div id="screen-test" class="screen">
+  <div class="progress-wrap">
+    <span class="progress-label">Progresso</span>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <span class="progress-count" id="progress-count">0 / 20</span>
+  </div>
+  <div class="test-wrap" id="test-wrap"></div>
+</div>
+
+<!-- ══ RESULTS ══ -->
+<div id="screen-results" class="screen">
+  <div class="results-wrap">
+    <div class="result-hero" id="result-hero">
+      <h2>O Efeito Sombra</h2>
+      <div class="pinfo" id="res-pinfo"></div>
+    </div>
+    <div class="meter-card" id="meter-card">
+      <h3>Sua Pontuação</h3>
+      <div class="score-display">
+        <div class="score-big" id="score-big">0</div>
+        <div class="score-meta">
+          <span class="score-zone-badge" id="zone-badge"></span>
+          <div class="score-zone-label" id="zone-label"></div>
+          <div class="score-range" id="zone-range"></div>
+        </div>
+      </div>
+      <div class="meter-zones"><div class="mz1"></div><div class="mz2"></div><div class="mz3"></div></div>
+      <div class="meter-track"><div class="meter-fill" id="meter-fill" style="width:0%"></div></div>
+      <div class="meter-labels"><span>3</span><span>37</span><span>75</span><span>112</span></div>
+    </div>
+    <div id="interp-section"></div>
+    <div class="breakdown-card">
+      <h3>Detalhe por Questão</h3>
+      <div class="breakdown-grid" id="breakdown-grid"></div>
+    </div>
+    <div class="conclusion-card" id="conclusion-card"></div>
+    <div class="result-actions no-print">
+      <button class="btn-secondary" onclick="window.print()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir / Salvar PDF
+      </button>
+      <button class="btn-primary" onclick="restart()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        Nova Avaliação
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  CODE VALIDATION
+// ══════════════════════════════════════════════
+const MASTER_CODE='ABC1234',SALT='RTN9K',B36='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function toBase36_2(n){n=((n%1296)+1296)%1296;return B36[Math.floor(n/36)]+B36[n%36];}
+function computeChecksum(ds,days){const s=ds+String(days).padStart(2,'0')+SALT;let t=0;for(let i=0;i<s.length;i++)t+=(i+1)*s.charCodeAt(i);return toBase36_2(t%1296);}
+function isCodeValid(code){
+  code=code.trim().toUpperCase();
+  if(code===MASTER_CODE)return{ok:true};
+  const m=code.match(/^RET-(\d{6})-(\d{2})-([A-Z0-9]{2})$/);
+  if(!m)return{ok:false,msg:'Formato inválido.'};
+  const ds=m[1],days=parseInt(m[2]),cs=m[3];
+  if(cs!==computeChecksum(ds,days))return{ok:false,msg:'Código inválido.'};
+  const dd=ds.slice(0,2),mm=ds.slice(2,4),yy=ds.slice(4,6);
+  const start=new Date(2000+parseInt(yy),parseInt(mm)-1,parseInt(dd));
+  const end=new Date(start);end.setDate(end.getDate()+days);
+  const today=new Date();today.setHours(0,0,0,0);
+  if(today<start)return{ok:false,msg:'Código ainda não ativo.'};
+  if(today>end)return{ok:false,msg:'Código expirado.'};
+  return{ok:true};
+}
+function validateCodigo(){
+  const res=isCodeValid(document.getElementById('inp-codigo').value);
+  if(res.ok){
+    document.getElementById('codigo-error').style.display='none';
+    document.getElementById('card-codigo').style.opacity='.55';
+    document.getElementById('card-codigo').style.pointerEvents='none';
+    document.getElementById('card-dados').style.display='block';
+    document.getElementById('inp-nome').focus();
+  } else {
+    const err=document.getElementById('codigo-error');
+    err.querySelector('span').textContent=res.msg||'Código inválido.';
+    err.style.display='flex';
+    document.getElementById('inp-codigo').style.borderColor='#d94f34';
+    document.getElementById('inp-codigo').animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:300,easing:'ease-out'});
+  }
+}
+function resetCodigoError(){document.getElementById('codigo-error').style.display='none';document.getElementById('inp-codigo').style.borderColor='';}
+(function(){const p=new URLSearchParams(window.location.search),c=p.get('code');if(!c)return;document.getElementById('inp-codigo').value=c.toUpperCase();setTimeout(validateCodigo,120);})();
+
+// ══════════════════════════════════════════════
+//  SCORING TABLE  (exact values from PDF)
+//  scores[q-1] = { a, b, c, d }
+// ══════════════════════════════════════════════
+const SCORING = [
+  {a:1, b:3, c:5, d:8}, // Q1
+  {a:1, b:3, c:5, d:8}, // Q2
+  {a:5, b:3, c:1, d:0}, // Q3
+  {a:0, b:1, c:3, d:5}, // Q4
+  {a:0, b:1, c:3, d:5}, // Q5
+  {a:0, b:5, c:0, d:3}, // Q6
+  {a:5, b:3, c:1, d:0}, // Q7
+  {a:0, b:1, c:3, d:5}, // Q8
+  {a:0, b:3, c:0, d:5}, // Q9
+  {a:8, b:5, c:3, d:1}, // Q10
+  {a:0, b:3, c:5, d:8}, // Q11
+  {a:0, b:3, c:5, d:3}, // Q12
+  {a:5, b:3, c:0, d:5}, // Q13
+  {a:5, b:3, c:1, d:0}, // Q14
+  {a:0, b:3, c:3, d:5}, // Q15
+  {a:5, b:3, c:1, d:0}, // Q16
+  {a:5, b:0, c:1, d:5}, // Q17
+  {a:5, b:3, c:3, d:0}, // Q18
+  {a:5, b:0, c:0, d:3}, // Q19
+  {a:0, b:0, c:5, d:5}, // Q20
+];
+
+const QUESTIONS = [
+  { n:1,  text:'Há quanto tempo você vem trabalhando os mesmos assuntos seja na carreira, na saúde, nos relacionamentos pessoais ou nas finanças?',
+    a:'Menos de 12 meses', b:'Um a três anos', c:'Mais de cinco anos', d:'Mais de dez anos' },
+  { n:2,  text:'Nos últimos doze meses, quantas vezes você guardou algo importante no lugar errado, recebeu uma multa de trânsito, teve um acidente ou destruiu algo de valor?',
+    a:'Nenhuma', b:'Uma ou duas', c:'Mais de cinco vezes', d:'Mais de dez vezes' },
+  { n:3,  text:'Com que frequência você se sente falso, inautêntico, ou acha que precisa muito esforço para que as pessoas o vejam de determinada maneira?',
+    a:'O tempo todo', b:'Ocasionalmente', c:'Quase nunca', d:'Nunca' },
+  { n:4,  text:'Se seus amigos, colegas de trabalho e familiares fossem entrevistados, eles diriam que você reclama...',
+    a:'Raramente ou nunca', b:'Talvez uma vez por dia', c:'Frequentemente', d:'O tempo todo' },
+  { n:5,  text:'Nos últimos doze meses, quantas vezes você disse ou fez algo de que se arrependeu depois, seja imediatamente ou com o passar do tempo?',
+    a:'Nenhuma', b:'Uma ou duas vezes', c:'Mais de cinco vezes', d:'Mais de dez vezes' },
+  { n:6,  text:'Depois de uma realização pessoal – alcançar o peso desejado, pagar as contas do cartão de crédito, organizar casa ou escritório, etc. – qual das emoções abaixo você é mais inclinado a sentir?',
+    a:'Aliviado por ter conseguido, mas cauteloso para não voltar aos antigos comportamentos',
+    b:'Orgulhoso, no direito de receber um prêmio por todo o seu trabalho duro!',
+    c:'Inspirado por seu sucesso e comprometido a continuar o bom trabalho',
+    d:'Ressentido por precisar trabalhar tanto' },
+  { n:7,  text:'Com que frequência você percebe que está se sentindo inadequado, indigno, insuficientemente bom ou não amado?',
+    a:'O tempo todo', b:'Ocasionalmente', c:'Quase nunca', d:'Nunca' },
+  { n:8,  text:'Numa escala de um a dez, que disposição você tem de falar a verdade, mesmo quando ela vai de encontro à opinião dos outros?',
+    a:'8 a 10 – Sou muito disposto a falar a verdade',
+    b:'5 a 7 – Na maioria do tempo estou disposto a falar a verdade',
+    c:'3 a 5 – Ocasionalmente estou disposto a falar a verdade',
+    d:'1 a 2 – Quase nunca estou disposto a falar a verdade' },
+  { n:9,  text:'Qual é o foco primário de sua vida nesse momento?',
+    a:'Avançar na carreira, melhorar a saúde, construir riqueza ou aprofundar relacionamentos',
+    b:'Administrar relacionamentos desgastados ou "apagar incêndios" no trabalho ou em casa',
+    c:'Fazer um progresso mensurável na direção de seus objetivos, ao longo de um período razoável',
+    d:'Tentar desviar ou evitar o desastre imediato nas finanças, nos relacionamentos ou na carreira' },
+  { n:10, text:'Com que porcentagem de seu tempo você pode dizer que honra sua palavra e suas promessas – seja a si mesmo ou aos outros?',
+    a:'Menos de 10%', b:'Menos de 25%', c:'Aproximadamente metade do tempo', d:'A maior parte do tempo' },
+  { n:11, text:'Quanto tempo você gasta diariamente com fofoca – seja sobre alguém que você conhece, lendo tabloides ou assistindo a programas de fofoca na televisão?',
+    a:'Tempo algum', b:'Menos de uma hora por dia', c:'Mais de uma hora por dia', d:'Mais de três horas por dia' },
+  { n:12, text:'Qual das afirmações abaixo você usaria para descrever sua vida?',
+    a:'Na maior parte do tempo, as coisas funcionam para mim com certa facilidade',
+    b:'Eu tenho muitos talentos e dons, mas não os utilizo em seu total potencial',
+    c:'Sou perseguido pelo azar e me vejo em uma situação ruim após a outra',
+    d:'Preciso trabalhar duro só para manter a média' },
+  { n:13, text:'Quantas horas por dia você passa trabalhando para atingir seus objetivos de longo prazo?',
+    a:'Nenhuma', b:'Menos de vinte minutos por dia', c:'Uma hora ou mais por dia', d:'Você não tem objetivos de longo prazo' },
+  { n:14, text:'Com que frequência você se sente maltratado, incompreendido ou como se alguém tirasse proveito de você – tanto na vida pessoal quanto profissional?',
+    a:'Todo dia', b:'Frequentemente', c:'Ocasionalmente', d:'Raramente ou nunca' },
+  { n:15, text:'Quando lhe pedem que faça algo que você não tem interesse em fazer, você fica mais inclinado a:',
+    a:'Dizer não, de consciência tranquila',
+    b:'Dizer não, mas se sentir culpado por isso',
+    c:'Dizer sim, mas não cumprir',
+    d:'Dizer sim, mas se ressentir por isso' },
+  { n:16, text:'Imagine que sua vida é uma casa com muitos cômodos – de alguns você gosta, de outros tem vergonha. Quantas pessoas você permite ver todos os seus cômodos?',
+    a:'Ninguém',
+    b:'Uma pessoa significativa – cônjuge, amante, melhor amigo ou irmão etc.',
+    c:'Um pequeno punhado de pessoas me conhece tão bem assim',
+    d:'Há muita gente em minha vida que me conhece tão bem assim' },
+  { n:17, text:'Quando você se sente magoado por alguém ou algo, o que tende a fazer?',
+    a:'Guarda para você',
+    b:'Reflete, perdoa e segue em frente',
+    c:'Confronta a situação',
+    d:'Fala a respeito com todos, menos com a pessoa envolvida' },
+  { n:18, text:'Quando você tem um impulso ou uma ideia de como melhorar algum aspecto de sua vida, o que você faz?',
+    a:'Ignora completamente',
+    b:'Dá alguns passos na direção certa, mas raramente vê o projeto chegar até a linha final',
+    c:'Diz a si mesmo que "um dia desses eu faço"',
+    d:'Cria uma estrutura de apoio ao redor de si mesmo, para garantir que você entre em ação' },
+  { n:19, text:'Na última vez que você se viu, inesperadamente, com tempo livre, o que fez?',
+    a:'Desperdiçou, fazendo compras em catálogos, vendo TV, navegando na internet',
+    b:'Usou a oportunidade para seguir adiante em um projeto importante',
+    c:'Relaxou e se rejuvenesceu, tirando um cochilo, meditando ou lendo',
+    d:'Sua vida é tão caótica que você nem consegue se lembrar de quando teve um tempo livre inesperado' },
+  { n:20, text:'Quando você comete um erro, o que é mais provável que faça?',
+    a:'É gentil consigo mesmo e resolve fazer as coisas de forma diferente no futuro',
+    b:'Coloca as coisas em perspectiva, reconhecendo a si mesmo pelo que fez certo',
+    c:'Cai na autocrítica',
+    d:'Interpreta seu erro como uma evidência de que você é incompetente e para de tentar' },
+];
+
+const PER_PAGE = 5;
+let answers = {}; // { n: 'a'|'b'|'c'|'d' }
+let userData = {};
+let currentPage = 0;
+
+// ══════════════════════════════════════════════
+//  START
+// ══════════════════════════════════════════════
+function startTest(){
+  const nome=document.getElementById('inp-nome').value.trim();
+  const whats=document.getElementById('inp-whats').value.trim();
+  const email=document.getElementById('inp-email').value.trim();
+  if(!nome||!whats||!email){alert('Preencha nome, WhatsApp e e-mail.');return;}
+  userData={nome,whats,email}; answers={}; currentPage=0;
+  document.getElementById('screen-access').classList.remove('active');
+  document.getElementById('screen-test').classList.add('active');
+  renderPage(); window.scrollTo({top:0});
+}
+
+// ══════════════════════════════════════════════
+//  RENDER PAGE
+// ══════════════════════════════════════════════
+function renderPage(){
+  const wrap = document.getElementById('test-wrap');
+  const start = currentPage * PER_PAGE;
+  const end   = Math.min(start + PER_PAGE, QUESTIONS.length);
+  const pageQs = QUESTIONS.slice(start, end);
+  const isLast = end >= QUESTIONS.length;
+
+  let html = pageQs.map(q => {
+    const ans = answers[q.n];
+    const opts = ['a','b','c','d'].map(letter => {
+      const sel = ans === letter ? 'selected' : '';
+      return `<button class="opt-btn ${sel}" onclick="setAnswer(${q.n},'${letter}')">
+        <span class="opt-letter">${letter.toUpperCase()}</span>${q[letter]}
+      </button>`;
+    }).join('');
+    return `
+      <div class="q-card${ans?' answered':''}" id="qcard-${q.n}">
+        <div class="q-header">
+          <div class="q-num">${q.n}</div>
+          <div class="q-text">${q.text}</div>
+        </div>
+        <div class="q-options">${opts}</div>
+      </div>`;
+  }).join('');
+
+  html += `<div class="nav-btns">
+    ${currentPage > 0 ? `<button class="btn-secondary" onclick="prevPage()">← Anterior</button>` : '<div></div>'}
+    ${isLast
+      ? `<button class="btn-primary" style="background:var(--shadow-dark)" onclick="showResults()">Ver Resultado <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>`
+      : `<button class="btn-primary" onclick="nextPage()">Próximo <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>`
+    }
+  </div>`;
+
+  wrap.innerHTML = html;
+  updateProgress();
+}
+
+function setAnswer(n, letter){
+  answers[n] = letter;
+  const card = document.getElementById('qcard-' + n);
+  if(!card) return;
+  card.classList.add('answered');
+  card.querySelectorAll('.opt-btn').forEach((btn, i) => {
+    const l = ['a','b','c','d'][i];
+    btn.className = 'opt-btn' + (letter === l ? ' selected' : '');
+  });
+  updateProgress();
+}
+
+function updateProgress(){
+  const done = Object.keys(answers).length;
+  document.getElementById('progress-fill').style.width = (done/20*100) + '%';
+  document.getElementById('progress-count').textContent = done + ' / 20';
+}
+
+function nextPage(){
+  const start=currentPage*PER_PAGE, end=Math.min(start+PER_PAGE,QUESTIONS.length);
+  const missing=QUESTIONS.slice(start,end).filter(q=>!answers[q.n]);
+  if(missing.length){alert('Por favor, responda todas as questões desta página antes de continuar.');return;}
+  currentPage++; renderPage(); window.scrollTo({top:0,behavior:'smooth'});
+}
+function prevPage(){ currentPage--; renderPage(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+// ══════════════════════════════════════════════
+//  RESULTS
+// ══════════════════════════════════════════════
+function calcTotal(){
+  let total = 0;
+  QUESTIONS.forEach(q => {
+    const ans = answers[q.n];
+    if(ans) total += SCORING[q.n - 1][ans];
+  });
+  return total;
+}
+
+function getZone(score){
+  if(score <= 37) return {
+    key:'z1', label:'Zona Neutra', range:'3 – 37 pontos',
+    badge:'Zona Neutra', heroColor:'#1a4a2e', meterColor:'#2e9e66',
+    borderColor:'#2e9e66', bgColor:'#eef8f3',
+    desc:'Você está numa zona neutra, o que significa que está livre (por ora) de muitas crenças e ferimentos internos que dão origem aos comportamentos destrutivos causados por sua sombra.',
+    desc2:'Você possui uma elevada autoestima, suas ações estão alinhadas com seus valores e você provavelmente está realizando um progresso em direção aos seus objetivos de longo prazo. Continue amando e ouvindo a si mesmo.',
+    tagline:'Autoestima elevada · Alinhamento de valores · Progresso consistente'
+  };
+  if(score <= 75) return {
+    key:'z2', label:'Zona de Atenção', range:'38 – 75 pontos',
+    badge:'Zona de Atenção', heroColor:'#4a2e0a', meterColor:'#d4922a',
+    borderColor:'#d4922a', bgColor:'#fdf8ee',
+    desc:'Talvez você não esteja vivenciando totalmente o peso e o impacto da sombra nesse momento, mas provavelmente está empregando muito esforço para reprimir e esconder partes que desgosta de si mesmo e de sua vida.',
+    desc2:'A energia que está usando para impedir que as coisas fujam ao controle — seja no trabalho, em casa, ou em relação à saúde e bem-estar — estaria mais bem empregada se fosse direcionada na obtenção de seus objetivos e desejos.',
+    tagline:'Energia desperdiçada em repressão · Potencial não utilizado plenamente'
+  };
+  return {
+    key:'z3', label:'Zona Crítica', range:'76 – 112 pontos',
+    badge:'Zona Crítica', heroColor:'#4a1010', meterColor:'#c9472f',
+    borderColor:'#c9472f', bgColor:'#fdf2ef',
+    desc:'Ou você gasta muito tempo e energia tentando administrar a opinião alheia a seu respeito, ou está profundamente resignado quanto às condições de sua vida. Isso é a sombra trabalhando — ela paralisa você na tomada de decisão e ações corretivas.',
+    desc2:'Se for deixada à revelia, o caos interno que está vivenciando pode levá-lo ao caminho do desastre. No entanto, a boa notícia é que cada ato de sabotagem próprio apresenta uma oportunidade de despertá-lo ao que é verdadeiramente importante. Abra seu coração, examine a sombra e você começará a ver como a sua dor mais profunda, quando digerida e compreendida, é moldada para levá-lo ao seu destino maior.',
+    tagline:'Padrões de autossabotagem · Resignação · Oportunidade de transformação'
+  };
+}
+
+function showResults(){
+  const missing = QUESTIONS.filter(q => !answers[q.n]);
+  if(missing.length){alert(`Ainda há ${missing.length} questão(ões) sem resposta.`);return;}
+
+  document.getElementById('screen-test').classList.remove('active');
+  document.getElementById('screen-results').classList.add('active');
+
+  const total = calcTotal();
+  const zone  = getZone(total);
+  const now   = new Date().toLocaleDateString('pt-BR');
+
+  // Hero
+  const hero = document.getElementById('result-hero');
+  hero.style.background = zone.heroColor;
+  document.getElementById('res-pinfo').innerHTML =
+    `<strong>${userData.nome}</strong><span>${userData.email} · ${userData.whats} · ${now}</span>`;
+
+  // Score meter
+  document.getElementById('score-big').textContent = total;
+  document.getElementById('score-big').style.color = zone.meterColor;
+  document.getElementById('zone-badge').textContent = zone.badge;
+  document.getElementById('zone-badge').style.background = zone.meterColor + '20';
+  document.getElementById('zone-badge').style.color = zone.meterColor;
+  document.getElementById('zone-label').textContent = zone.label;
+  document.getElementById('zone-label').style.color = zone.meterColor;
+  document.getElementById('zone-range').textContent = zone.range;
+
+  // Meter fill (3 to 112 range)
+  const pct = Math.min(100, Math.max(0, ((total - 3) / (112 - 3)) * 100));
+  setTimeout(() => {
+    document.getElementById('meter-fill').style.background = zone.meterColor;
+    document.getElementById('meter-fill').style.width = pct + '%';
+  }, 100);
+
+  // Interpretation card
+  document.getElementById('interp-section').innerHTML = `
+    <div class="interp-card" data-num="${total}" style="background:${zone.bgColor};border-color:${zone.borderColor}">
+      <h3 style="color:${zone.meterColor}">${zone.label}</h3>
+      <div class="tagline" style="color:${zone.meterColor}">${zone.tagline}</div>
+      <p>${zone.desc}</p>
+      <p style="margin-top:12px">${zone.desc2}</p>
+    </div>`;
+
+  // Breakdown grid
+  let bkHtml = '';
+  QUESTIONS.forEach(q => {
+    const ans = answers[q.n];
+    const pts = ans ? SCORING[q.n-1][ans] : 0;
+    const cls = pts <= 1 ? 'bk-low' : pts <= 3 ? 'bk-mid' : 'bk-high';
+    const ptColor = pts <= 1 ? 'var(--z1-color)' : pts <= 3 ? 'var(--z2-color)' : 'var(--z3-color)';
+    bkHtml += `
+      <div class="bk-item ${cls}">
+        <div class="bk-q">Q${q.n}</div>
+        <div class="bk-ans">${ans ? ans.toUpperCase() : '—'}</div>
+        <div class="bk-pts" style="color:${ptColor}">${pts}</div>
+      </div>`;
+  });
+  document.getElementById('breakdown-grid').innerHTML = bkHtml;
+
+  // Conclusion
+  document.getElementById('conclusion-card').innerHTML = `
+    <h3>Reflexão Final</h3>
+    <p>Sua pontuação de <strong>${total} pontos</strong> coloca você na <strong>${zone.label}</strong> (${zone.range}).</p>
+    <p>Lembre-se: esta avaliação é um retrato do momento presente — não uma sentença. A sombra não é algo a ser eliminado, mas compreendido. Cada aspecto que rejeitamos em nós mesmos carrega energia que, quando integrada, torna-se uma fonte de força e autenticidade.</p>
+    <p>Use este resultado como ponto de partida para conversas honestas com seu mentor e consigo mesmo.</p>`;
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ══════════════════════════════════════════════
+//  RESTART
+// ══════════════════════════════════════════════
+function restart(){
+  answers={}; userData={}; currentPage=0;
+  ['inp-nome','inp-whats','inp-email','inp-codigo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('card-dados').style.display='none';
+  document.getElementById('card-codigo').style.opacity='1';
+  document.getElementById('card-codigo').style.pointerEvents='auto';
+  resetCodigoError();
+  document.getElementById('screen-results').classList.remove('active');
+  document.getElementById('screen-access').classList.add('active');
+  window.scrollTo({top:0});
+}
+</script>
+</body>
+</html>
