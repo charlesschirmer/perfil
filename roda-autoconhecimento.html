@@ -159,12 +159,48 @@ body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(
 }
 @media(max-width:400px){ .legend-items { grid-template-columns: 1fr; } }
 
+/* ── IMPROVEMENT SECTION ── */
+.improvement-section {
+  width: 100%; margin-top: 24px;
+  background: var(--card); border: 2px solid var(--border);
+  border-radius: 16px; padding: 24px 28px;
+  animation: fadeUp .4s ease both;
+}
+.improvement-section.hidden { display: none; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+.improvement-title {
+  font-family: 'Playfair Display', serif; font-size: 18px;
+  margin-bottom: 6px; display: flex; align-items: center; gap: 10px;
+}
+.improvement-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+
+.improvement-items { display: flex; flex-direction: column; gap: 12px; }
+.imp-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border-radius: 12px;
+  border: 2px solid; position: relative; overflow: hidden;
+}
+.imp-rank {
+  width: 32px; height: 32px; flex-shrink: 0; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 900; color: #fff;
+}
+.imp-info { flex: 1; }
+.imp-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+.imp-score-line { font-size: 12px; }
+.imp-bar-wrap { width: 80px; flex-shrink: 0; }
+.imp-bar-track { height: 8px; background: rgba(0,0,0,.08); border-radius: 99px; overflow: hidden; }
+.imp-bar-fill { height: 100%; border-radius: 99px; transition: width .6s ease; }
+.imp-val { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; flex-shrink: 0; width: 36px; text-align: right; }
+
 /* PRINT */
 @media print {
   .site-header, .wheel-actions, .hint-box, .no-print { display: none !important; }
   .wheel-screen-inner { padding: 0; max-width: 100%; }
   .wheel-layout { grid-template-columns: 1fr 220px; }
   .wheel-legend { position: static; }
+  .improvement-section { break-inside: avoid; }
 }
 </style>
 </head>
@@ -270,6 +306,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(
       </button>
     </div>
 
+    <!-- IMPROVEMENT SECTION -->
+    <div class="improvement-section hidden" id="improvement-section">
+      <div class="improvement-title">
+        🌱 Pontos de Melhoria a Trabalhar
+      </div>
+      <p class="improvement-sub">Dimensões com menor pontuação — foco de desenvolvimento para os próximos ciclos de mentoria</p>
+      <div class="improvement-items" id="improvement-items"></div>
+    </div>
+
   </div>
 </div>
 
@@ -333,11 +378,33 @@ const DIMENSIONS = [
   { n:12, name:'Sonhos' },
 ];
 
-// Palette — 12 shades cycling through purple spectrum
-const COLORS = [
-  '#7c3aed','#8b45e0','#9b50d3','#a855c6','#b45fba','#c06aad',
-  '#6d3ae0','#5e2ed3','#4f22c6','#4016b9','#3b0fac','#5c28d6',
-];
+// Score-based color: 1=red → 5=amber → 10=green
+function scoreColor(score){
+  if(!score) return '#ccc';
+  // Interpolate: 1→#d94f34, 5→#d4922a, 8→#5cb85c, 10→#2e9e66
+  const stops = [
+    {s:1,  r:217, g:79,  b:52 },
+    {s:3,  r:220, g:120, b:40 },
+    {s:5,  r:212, g:146, b:42 },
+    {s:7,  r:130, g:185, b:60 },
+    {s:10, r:46,  g:158, b:102},
+  ];
+  let lo=stops[0], hi=stops[stops.length-1];
+  for(let i=0;i<stops.length-1;i++){
+    if(score>=stops[i].s && score<=stops[i+1].s){ lo=stops[i]; hi=stops[i+1]; break; }
+  }
+  const t = lo.s===hi.s ? 0 : (score-lo.s)/(hi.s-lo.s);
+  const r=Math.round(lo.r+(hi.r-lo.r)*t);
+  const g=Math.round(lo.g+(hi.g-lo.g)*t);
+  const b=Math.round(lo.b+(hi.b-lo.b)*t);
+  return `rgb(${r},${g},${b})`;
+}
+
+function scoreColorFill(score, ring){
+  // Filled rings get the score color with increasing opacity
+  const base = scoreColor(score);
+  return base;
+}
 
 const CX = 300, CY = 300;
 const R_INNER = 18;
@@ -403,7 +470,7 @@ function drawWheel(){
   // ── Segment cells ──
   DIMENSIONS.forEach((dim, si) => {
     const score = scores[dim.n] || 0;
-    const baseColor = COLORS[si];
+    const baseColor = scoreColor(score);
 
     for(let ring=1; ring<=N_RINGS; ring++){
       const rIn  = R_INNER + (ring-1)*RING_STEP;
@@ -411,11 +478,13 @@ function drawWheel(){
       const path = document.createElementNS('http://www.w3.org/2000/svg','path');
       path.setAttribute('d', segPath(si, rIn, rOut));
 
+      // Each ring uses the color for ITS OWN value (so hover shows where you'd land)
+      const ringColor = scoreColor(ring);
       const filled = ring <= score;
       if(filled){
-        const opacity = 0.25 + ring*0.075;
-        path.setAttribute('fill', baseColor);
-        path.setAttribute('fill-opacity', Math.min(opacity,1));
+        const opacity = 0.3 + ring*0.07;
+        path.setAttribute('fill', ringColor);
+        path.setAttribute('fill-opacity', Math.min(opacity, 1));
       } else {
         path.setAttribute('fill','#fff');
         path.setAttribute('fill-opacity','1');
@@ -424,12 +493,18 @@ function drawWheel(){
       path.setAttribute('stroke-width','0.7');
       path.style.cursor = 'pointer';
 
-      // Hover
+      // Hover shows the ring's own color as preview
       path.addEventListener('mouseenter', () => {
-        if(ring > score){ path.setAttribute('fill', baseColor); path.setAttribute('fill-opacity','0.15'); }
+        if(ring > score){
+          path.setAttribute('fill', ringColor);
+          path.setAttribute('fill-opacity','0.18');
+        }
       });
       path.addEventListener('mouseleave', () => {
-        if(ring > score){ path.setAttribute('fill','#fff'); path.setAttribute('fill-opacity','1'); }
+        if(ring > score){
+          path.setAttribute('fill','#fff');
+          path.setAttribute('fill-opacity','1');
+        }
       });
 
       path.addEventListener('click', () => {
@@ -437,6 +512,7 @@ function drawWheel(){
         drawWheel();
         renderLegend();
         updateCounter();
+        renderImprovement();
       });
 
       svg.appendChild(path);
@@ -473,7 +549,7 @@ function drawWheel(){
     const lx = CX + labelR*Math.cos(midAngle);
     const ly = CY + labelR*Math.sin(midAngle);
     const score = scores[dim.n] || 0;
-    const color = score > 0 ? COLORS[si] : '#aaa';
+    const color = score > 0 ? scoreColor(score) : '#999';
 
     const text = document.createElementNS('http://www.w3.org/2000/svg','text');
     text.setAttribute('x', lx);
@@ -496,7 +572,7 @@ function drawWheel(){
     const rMid = R_INNER + (score - 0.5)*RING_STEP;
     const bx = CX + rMid*Math.cos(midAngle);
     const by = CY + rMid*Math.sin(midAngle);
-    const color = COLORS[si];
+    const color = scoreColor(score);
 
     const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
     circle.setAttribute('cx',bx); circle.setAttribute('cy',by);
@@ -548,14 +624,14 @@ function renderLegend(){
   container.innerHTML = DIMENSIONS.map((dim, si) => {
     const sc  = scores[dim.n] || 0;
     const pct = sc * 10;
-    const color = COLORS[si];
+    const color = scoreColor(sc);
     return `
       <div class="legend-item${sc>0?' has-score':''}" onclick="highlightDim(${dim.n})">
         <div class="legend-num" style="${sc>0?'background:'+color:''}">${dim.n}</div>
         <div style="flex:1;min-width:0;">
           <div class="legend-name">${dim.name}</div>
           <div class="legend-bar">
-            <div class="legend-bar-fill" style="width:${pct}%;background:${color}"></div>
+            <div class="legend-bar-fill" style="width:${pct}%;background:${sc>0?color:'#ccc'}"></div>
           </div>
         </div>
         <div class="legend-val" style="${sc>0?'color:'+color:''}">${sc>0?sc:'–'}</div>
@@ -576,11 +652,56 @@ function highlightDim(n){
   drawWheel();
 }
 
+function renderImprovement(){
+  const section = document.getElementById('improvement-section');
+  const itemsEl = document.getElementById('improvement-items');
+
+  // Need at least 3 scores to show improvement
+  const scored = DIMENSIONS.filter(d => scores[d.n] !== undefined);
+  if(scored.length < 3){ section.classList.add('hidden'); return; }
+
+  // Sort by score ascending
+  const sorted = [...scored].sort((a,b) => scores[a.n] - scores[b.n]);
+
+  // Find the cutoff: include all tied with the 3rd lowest
+  const cutoffScore = scores[sorted[2].n];
+  const toHighlight = sorted.filter(d => scores[d.n] <= cutoffScore);
+
+  section.classList.remove('hidden');
+
+  const medals = ['🥇','🥈','🥉','④','⑤'];
+  itemsEl.innerHTML = toHighlight.map((dim, idx) => {
+    const sc    = scores[dim.n];
+    const color = scoreColor(sc);
+    const pct   = sc * 10;
+    // Background is a very light tint of the color
+    const bgAlpha = '14'; // hex 8% opacity
+    return `
+      <div class="imp-item" style="border-color:${color};background:${color}${bgAlpha}">
+        <div class="imp-rank" style="background:${color}">${dim.n}</div>
+        <div class="imp-info">
+          <div class="imp-name">${dim.name}</div>
+          <div class="imp-score-line" style="color:${color}">
+            <strong>Pontuação: ${sc}</strong> / 10
+            ${sc <= 3 ? '· <em>Urgente</em>' : sc <= 5 ? '· <em>Importante</em>' : '· <em>A melhorar</em>'}
+          </div>
+          <div style="margin-top:6px;">
+            <div class="imp-bar-track" style="background:rgba(0,0,0,.08);height:6px;border-radius:99px;overflow:hidden;">
+              <div style="height:100%;width:${pct}%;background:${color};border-radius:99px;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="imp-val" style="color:${color}">${sc}</div>
+      </div>`;
+  }).join('');
+}
+
 function resetWheel(){
   if(!confirm('Reiniciar todas as pontuações?')) return;
   Object.keys(scores).forEach(k => delete scores[k]);
   drawWheel();
   renderLegend();
+  document.getElementById('improvement-section').classList.add('hidden');
 }
 </script>
 </body>
